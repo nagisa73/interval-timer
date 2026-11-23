@@ -123,7 +123,9 @@ function updateNowPanel() {
   const secondsLeft = Math.ceil(state.remainingMs / 1000);
 
   // 色（今のブロックの種類に合わせる）
-  $("now").className = "now k-" + (item ? kindColor(item.node.kind) : "none");
+  const isPaused = isInProgress() && !state.running;
+  $("now").className = "now k-" + (item ? kindColor(item.node.kind) : "none") + (isPaused ? " is-paused" : "");
+  $("pauseLabel").hidden = !isPaused;
 
   // 名前
   if (state.finished) {
@@ -156,12 +158,38 @@ function updateNowPanel() {
   $("bar").style.width = progress.toFixed(2) + "%";
 }
 
+// 動きを減らす設定の人には、スクロールのアニメーションをしない
+function scrollMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+}
+
+// ブロックが図の真ん中に来るようにスクロールする（図の中だけが動く）
+function scrollBlockIntoView(block) {
+  if (!block) return;
+  const plan = $("plan");
+  const offset = block.getBoundingClientRect().top - plan.getBoundingClientRect().top;
+  const top = plan.scrollTop + offset - (plan.clientHeight - block.offsetHeight) / 2;
+  plan.scrollTo({ top: top, behavior: scrollMotion() });
+}
+
+// 前回スクロールしたときの、リストの何番目か（タイマー中でなければ null）
+let lastActiveIndex = null;
+
 // ブロックの図：今のブロックに印を付けて、経過に合わせてゲージを増やす
 function updateBlocks() {
   const item = currentItem();
 
+  // スタートしたときと、次のブロックに進んだときに、今のブロックを見える位置へ
+  const activeIndex = state.started && !state.finished ? state.index : null;
+  if (activeIndex !== lastActiveIndex) {
+    lastActiveIndex = activeIndex;
+    if (activeIndex !== null && item) scrollBlockIntoView(blockElements.get(item.node.id));
+  }
+
   for (const [id, block] of blockElements) {
-    const isCurrent = item !== null && item.node.id === id;
+    // スタート前の最初のブロックは強調しない（「次へ」で進めたときは、どこにいるか示す）
+    const showCurrent = state.started || state.index > 0;
+    const isCurrent = showCurrent && item !== null && item.node.id === id;
     block.classList.toggle("current", isCurrent);
 
     // --p は CSS に渡す値（0 = 空、1 = 満タン）
@@ -181,11 +209,10 @@ function updateGroups() {
     const isActive = nowCount !== undefined;
 
     info.box.classList.toggle("active", isActive);
-    if (isActive) {
-      info.count.textContent = nowCount + "/" + info.node.repeat;
-    } else {
-      info.count.textContent = "×" + info.node.repeat;
-    }
+    const text = isActive ? nowCount + "/" + info.node.repeat : "×" + info.node.repeat;
+    info.count.textContent = text;
+    // 文字数が少ないほど大きく表示する（style.css の .g-count）
+    info.count.dataset.len = Math.max(3, text.length);
   }
 }
 

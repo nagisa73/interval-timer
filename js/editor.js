@@ -8,6 +8,7 @@
 
 // メニューを変更したあとに呼ぶ：保存 → 実行用リストを作り直す → 図を描き直す
 function commitPlanChange() {
+  dismissUndoToast();
   saveState();
   buildRunList();
   renderPlan();
@@ -69,14 +70,21 @@ function openStepCreator() {
 
     const nameInput = createNameInput(step);
     body.append(makeField("名前", nameInput));
-    body.append(makeField("種類", createKindSwitch(step)));
+    body.append(makeField("種類", createKindSwitch(step, function (previousKindId) {
+      // 名前を自分で変えていないときは、種類の名前に合わせる
+      const previousKind = findKind(previousKindId);
+      const current = nameInput.value.trim();
+      if (current === "" || (previousKind && current === previousKind.name)) {
+        nameInput.value = findKind(step.kind).name;
+      }
+    })));
     body.append(makeField("時間", createTimeControls(step)));
 
     const actions = createEl("div", "actions");
     const cancelButton = makeButton("やめる", "btn wide", closeSheet);
     const addButton = makeButton("追加", "btn primary", function () {
-      const name = nameInput.value.trim();
-      step.name = name !== "" ? name : findKind(step.kind).name;
+      flushWheels();  // 回している途中のホイールの値を確定する
+      step.name = resolveName(nameInput.value, step.kind);
       state.plan.push(step);
       commitPlanChange();
       closeSheet();
@@ -87,7 +95,9 @@ function openStepCreator() {
 }
 
 
-/* ---------- ブロックの編集パネル ---------- */
+/* ---------- ブロックの編集パネル ----------
+   編集中は下書き（draft）だけを書き換え、「完了」を押したときに反映する。
+   枠の外をタップして閉じたときは、下書きを捨てるので何も変わらない */
 
 function openStepEditor(id) {
   openSheet(function (body) {
@@ -99,11 +109,12 @@ function openStepEditor(id) {
 
     body.append(createEl("h2", null, "ブロックを編集"));
 
-    const nameInput = createNameInput(found.node);
+    const draft = { kind: found.node.kind, seconds: found.node.seconds, name: found.node.name };
+    const nameInput = createNameInput(draft);
     body.append(makeField("名前", nameInput));
-    body.append(makeField("種類", createKindSwitch(found.node)));
-    body.append(makeField("時間", createTimeControls(found.node)));
-    body.append(createStepActions(found, nameInput));
+    body.append(makeField("種類", createKindSwitch(draft)));
+    body.append(makeField("時間", createTimeControls(draft)));
+    body.append(createStepActions(found, draft, nameInput));
   });
 }
 
@@ -114,33 +125,29 @@ function createNameInput(node) {
   input.id = "editName";
   input.maxLength = CONFIG.maxNameLength;
   input.value = node.name;
-
-  // 入力が終わったとき（決定・別の場所をタップ）に反映する
-  input.addEventListener("change", function () {
-    applyName(node, input.value);
-  });
   return input;
 }
 
-function applyName(node, text) {
+// 入力された名前を整える（空なら種類の名前にする）
+function resolveName(text, kindId) {
   const name = text.trim();
-  const kind = findKind(node.kind);
-  node.name = name !== "" ? name : (kind ? kind.name : node.name);  // 空なら種類の名前にする
-  commitPlanChange();
+  return name !== "" ? name : findKind(kindId).name;
 }
 
 // 種類の切り替えボタン
-function createKindSwitch(node) {
+//   onKindChange : 種類が変わったときに呼ぶ関数（省略可）。前の種類の id を渡す
+function createKindSwitch(node, onKindChange) {
   const wrapper = createEl("div", "seg");
 
   for (const kind of state.kinds) {
     const button = makeButton(kind.name, "k-" + kind.color, function () {
+      const previousKindId = node.kind;
       node.kind = kind.id;
       // 押したボタンだけ「選ばれている」状態にする
       for (const other of wrapper.querySelectorAll("button")) {
         other.setAttribute("aria-pressed", other === button);
       }
-      commitPlanChange();
+      if (onKindChange) onKindChange(previousKindId);
     });
     button.setAttribute("aria-pressed", node.kind === kind.id);
     wrapper.append(button);
@@ -165,7 +172,6 @@ function createTimeControls(node) {
     if (minutesWheel.getValue() === maxMinutes && secondsWheel.getValue() > CONFIG.maxSeconds % 60) {
       secondsWheel.setValue(CONFIG.maxSeconds % 60);
     }
-    commitPlanChange();
   }
 
   const minutesWheel = makeWheel({
@@ -191,19 +197,29 @@ function createTimeControls(node) {
 }
 
 // ブロックの編集パネルの下のボタン
-function createStepActions(found, nameInput) {
+function createStepActions(found, draft, nameInput) {
   const actions = createEl("div", "actions");
 
   const deleteButton = makeButton("削除", "btn danger wide", function () {
+    closeSheet();  // 回している途中のホイールの値を先に確定する
+    const previousPlan = copyPlan();
     found.parentList.splice(found.index, 1);
     commitPlanChange();
-    closeSheet();
+    showUndoToast("ブロックを削除しました", previousPlan);
   });
 
   const doneButton = makeButton("完了", "btn primary", function () {
-    // 名前を入力したまま「完了」を押したときも反映されるように
-    if (nameInput.value.trim() !== found.node.name) {
-      applyName(found.node, nameInput.value);
+    flushWheels();  // 回している途中のホイールの値を確定する
+    const node = found.node;
+    const name = resolveName(nameInput.value, draft.kind);
+    const changed = name !== node.name || draft.kind !== node.kind || draft.seconds !== node.seconds;
+
+    // 何も変えていないときは、タイマーの位置などをそのままにする
+    if (changed) {
+      node.name = name;
+      node.kind = draft.kind;
+      node.seconds = draft.seconds;
+      commitPlanChange();
     }
     closeSheet();
   });
@@ -226,22 +242,23 @@ function openGroupEditor(id) {
 
     body.append(createEl("h2", null, "くり返しを編集"));
 
+    // 「完了」を押すまでは、ホイールの値だけを変える
     const repeatWheel = makeWheel({
       values: makeRange(1, CONFIG.maxRepeat),
       value: group.repeat,
       unit: "セット",
-      onChange: function (value) { group.repeat = value; },
-      onSettle: commitPlanChange,
+      onChange: function () {},
+      onSettle: function () {},
     });
     const wheels = createEl("div", "wheels");
     wheels.append(repeatWheel);
     body.append(makeField("セット数", wheels));
-    body.append(createGroupActions(found));
+    body.append(createGroupActions(found, repeatWheel));
   });
 }
 
 // くり返しの編集パネルの下のボタン
-function createGroupActions(found) {
+function createGroupActions(found, repeatWheel) {
   const group = found.node;
   const actions = createEl("div", "actions");
 
@@ -254,12 +271,22 @@ function createGroupActions(found) {
   });
 
   const deleteButton = makeButton("まとめて削除", "btn danger", function () {
+    closeSheet();  // 回している途中のホイールの値を先に確定する
+    const previousPlan = copyPlan();
     found.parentList.splice(found.index, 1);
     commitPlanChange();
-    closeSheet();
+    showUndoToast("くり返しを削除しました", previousPlan);
   });
 
-  const doneButton = makeButton("完了", "btn primary", closeSheet);
+  const doneButton = makeButton("完了", "btn primary", function () {
+    flushWheels();  // 回している途中のホイールの値を確定する
+    const repeat = repeatWheel.getValue();
+    if (repeat !== group.repeat) {
+      group.repeat = repeat;
+      commitPlanChange();
+    }
+    closeSheet();
+  });
 
   actions.append(unwrapButton, deleteButton, doneButton);
   return actions;

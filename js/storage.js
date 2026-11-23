@@ -16,6 +16,7 @@ function saveState() {
       plan: state.plan,
       settings: state.settings,
       kinds: state.kinds,
+      kindsVersion: CONFIG.kindsVersion,
       presets: state.presets,
       presetEdit: state.presetEdit,
     };
@@ -38,6 +39,17 @@ function loadState() {
 
     // ブロックの種類を確認するので、種類を先に読み込む
     state.kinds = normalizeKinds(data.kinds);
+
+    // はじめから入っている種類の初期色を変えたので、保存データも1回だけ移す
+    // （初期色のままのものだけ変える。このあと自分で選び直した色は変更しない）
+    const savedKindsVersion = data.kindsVersion || 1;
+    const needsKindUpdate = savedKindsVersion < CONFIG.kindsVersion;
+    if (savedKindsVersion < 2) changeKindColor("work", "orange", "red");
+    if (savedKindsVersion < 3) {
+      changeKindColor("rest", "teal", "blue");
+      changeKindColor("prep", "indigo", "orange");
+    }
+
     state.plan = normalizePlan(data.plan);
     state.presets = normalizePresets(data.presets);
 
@@ -54,10 +66,18 @@ function loadState() {
       };
     }
     removeOldDefaultPreset(hadPresets);
+    if (needsKindUpdate) saveState();
     return true;
   } catch (error) {
     return false;
   }
+}
+
+
+// 種類の色が from のままなら to に変える
+function changeKindColor(id, from, to) {
+  const kind = findKind(id);
+  if (kind && kind.color === from) kind.color = to;
 }
 
 

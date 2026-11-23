@@ -12,6 +12,7 @@ let toastTimerId = null;
 function showToast(message) {
   const toast = $("toast");
   toast.textContent = message;
+  toast.classList.remove("has-action");
   toast.classList.add("show");
 
   // 前のお知らせの「消す予約」を取り消してから、新しく予約する
@@ -19,6 +20,41 @@ function showToast(message) {
   toastTimerId = setTimeout(function () {
     toast.classList.remove("show");
   }, 2200);
+}
+
+// 今のタイマーの中身を、あとで戻せるように写し取る
+function copyPlan() {
+  return JSON.parse(JSON.stringify(state.plan));
+}
+
+// 「元に戻す」ボタン付きのお知らせを出す。
+// previousPlan は、変更する前に copyPlan() で写し取っておいた中身
+function showUndoToast(message, previousPlan) {
+  const toast = $("toast");
+  const undoButton = createEl("button", "toast-action", "元に戻す");
+  undoButton.type = "button";
+  undoButton.addEventListener("click", function () {
+    state.selecting = false;
+    state.selectedIds = new Set();
+    state.plan = normalizePlan(previousPlan);
+    commitPlanChange();
+    showToast("元に戻しました");
+  });
+
+  toast.replaceChildren(createEl("span", null, message), undoButton);
+  toast.classList.add("has-action", "show");
+
+  clearTimeout(toastTimerId);
+  toastTimerId = setTimeout(dismissUndoToast, CONFIG.undoMs);
+}
+
+// 別の変更をしたら、古い内容に戻せないように「元に戻す」を消す
+function dismissUndoToast() {
+  const toast = $("toast");
+  if (!toast.classList.contains("has-action")) return;
+  clearTimeout(toastTimerId);
+  toast.classList.remove("show", "has-action");
+  toast.replaceChildren();
 }
 
 
@@ -69,6 +105,7 @@ function openResetConfirm() {
       makeButton("リセット", "btn danger", function () {
         closeSheet();
         resetTimer();
+        $("plan").scrollTo({ top: 0, behavior: scrollMotion() });
         showToast("リセットしました");
       })
     );

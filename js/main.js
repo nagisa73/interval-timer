@@ -16,6 +16,7 @@ $("playBtn").addEventListener("click", function () {
     pauseTimer();
   } else {
     stopSelecting();
+    dismissUndoToast();
     startTimer();
   }
 });

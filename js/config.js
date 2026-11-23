@@ -9,6 +9,9 @@ const CONFIG = {
   // 保存するときの名前（変えると、今までの保存内容は読み込まれなくなる）
   storageKey: "interval-timer-v1",
 
+  // はじめから入っている種類の色を変えたときに増やす番号（storage.js で使う）
+  kindsVersion: 3,
+
   // 1つのブロックの長さの上限（秒）。3600秒 = 60分
   maxSeconds: 3600,
 
@@ -24,6 +27,9 @@ const CONFIG = {
   // 「前へ」ボタンを押したとき、この時間（ミリ秒）以上たっていたら
   // 前のブロックではなく、今のブロックの最初に戻る
   backThresholdMs: 2000,
+
+  // 「元に戻す」ボタンを表示しておく時間（ミリ秒）
+  undoMs: 6000,
 
   // ホイールピッカーの1行の高さ（px）
   wheelItemHeight: 40,
@@ -50,20 +56,20 @@ const CONFIG = {
 
   // 種類に選べる色（実際の色は style.css の --c-〇〇）
   kindColors: [
-    { id: "orange", label: "オレンジ" },
-    { id: "teal",   label: "青緑" },
-    { id: "indigo", label: "藍" },
-    { id: "red",    label: "赤" },
-    { id: "pink",   label: "ピンク" },
-    { id: "purple", label: "紫" },
-    { id: "blue",   label: "青" },
-    { id: "green",  label: "緑" },
+    { id: "orange", label: "色1" },
+    { id: "teal",   label: "色2" },
+    { id: "indigo", label: "色3" },
+    { id: "red",    label: "色4" },
+    { id: "pink",   label: "色5" },
+    { id: "purple", label: "色6" },
+    { id: "blue",   label: "色7" },
+    { id: "green",  label: "色8" },
   ],
 };
 
 // はじめから入っている種類
 const DEFAULT_KINDS = [
-  { id: "work", name: "運動", color: "orange" },
-  { id: "rest", name: "休憩", color: "teal" },
-  { id: "prep", name: "準備", color: "indigo" },
+  { id: "work", name: "運動", color: "red" },
+  { id: "rest", name: "休憩", color: "blue" },
+  { id: "prep", name: "準備", color: "orange" },
 ];

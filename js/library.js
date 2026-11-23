@@ -200,12 +200,13 @@ function createPresetManager() {
 function loadPreset(preset) {
   cancelAnimationFrame(frameId);
   allowScreenOff();
+  const previousPlan = copyPlan();
   state.selecting = false;
   state.selectedIds = new Set();
   state.plan = normalizePlan(preset.plan);
   commitPlanChange();
   closeSheet();
-  showToast("「" + preset.name + "」を読み込みました");
+  showUndoToast("「" + preset.name + "」を読み込みました", previousPlan);
 }
 
 // マイセットの説明の入力欄
