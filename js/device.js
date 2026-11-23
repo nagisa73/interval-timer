@@ -12,12 +12,14 @@
 // 音を作る装置。ブラウザの決まりで、ユーザーがボタンを押したあとでないと
 // 作れないので、スタートボタンを押したときに prepareAudio() で作る
 let audioContext = null;
+let audioBuiltAt = 0;  // 音の装置を最後に作った時刻
 
 function prepareAudio() {
   try {
     if (!audioContext || audioContext.state === "closed") {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       audioContext = new AudioContextClass();
+      audioBuiltAt = Date.now();
     }
     resumeAudio();
 
@@ -48,27 +50,16 @@ function waitMs(ms) {
   return new Promise(function (resolve) { setTimeout(resolve, ms); });
 }
 
-// 別のアプリや画面オフから戻ったときに、止まった音を復帰させる
+// 別のアプリや画面オフから戻ったときに、タップなしで再開できるか試す
+// （iPhone はタップなしで作り直した装置を鳴らせないので、ここでは作り直さない）
 let audioRecovering = false;
 
 async function recoverAudio() {
-  if (audioRecovering || !state.running || !hasAnySound()) return;
+  if (audioRecovering || !state.running || !hasAnySound() || !audioContext) return;
   audioRecovering = true;
 
-  prepareAudio();
-  await waitMs(400);
-
-  // 再開できなければ、音の装置を作り直す
-  if (!isAudioRunning()) {
-    try {
-      if (audioContext) audioContext.close().catch(function () {});
-    } catch (error) {
-      // 何もしない
-    }
-    audioContext = null;
-    prepareAudio();
-    await waitMs(300);
-  }
+  resumeAudio();
+  await waitMs(500);
 
   // 端末の制限でタップが必要なときは、そのことを知らせる
   if (!isAudioRunning() && state.running && document.visibilityState === "visible") {
@@ -77,12 +68,63 @@ async function recoverAudio() {
   audioRecovering = false;
 }
 
-// 音が止まっているときは、次に画面を触ったタイミングで再開する
+// アプリから離れたあとは、「動作中」と表示されていても音が出ないことがあるので、
+// 戻ってから最初のタップで音の装置を作り直す
+let audioNeedsRefresh = false;
+
+function refreshAudioOnTap() {
+  if (!audioContext) return;  // まだ一度も音を使っていない
+  if (!audioNeedsRefresh && isAudioRunning()) return;
+
+  // 1回のタップで複数の合図が届くので、作ったばかりなら再開だけにする
+  if (Date.now() - audioBuiltAt < 1000) {
+    prepareAudio();
+    return;
+  }
+  audioNeedsRefresh = false;
+  rebuildAudio();
+}
+
+function rebuildAudio() {
+  const oldContext = audioContext;
+  stopPreview();
+  audioContext = null;
+  prepareAudio();
+
+  // 鳴っている途中の音が切れないように、古い装置は少し待ってから閉じる
+  setTimeout(function () {
+    try {
+      oldContext.close().catch(function () {});
+    } catch (error) {
+      // 何もしない
+    }
+  }, 2600);
+}
+
+// 画面のどこかをタップしたら、音を復活させる
 function setupAudioRecovery() {
-  for (const type of ["pointerup", "touchend", "click", "keydown"]) {
-    document.addEventListener(type, function () {
-      if (state.running && hasAnySound() && !isAudioRunning()) prepareAudio();
-    }, { capture: true, passive: true });
+  const markForRefresh = function () { audioNeedsRefresh = true; };
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") markForRefresh();
+  });
+  window.addEventListener("pagehide", markForRefresh);
+
+  // スクロールやドラッグでは音を出す許可がもらえないので、指が動かなかったときだけ反応する
+  let touchStart = null;
+  document.addEventListener("touchstart", function (event) {
+    const touch = event.changedTouches[0];
+    touchStart = { x: touch.clientX, y: touch.clientY };
+  }, { capture: true, passive: true });
+
+  document.addEventListener("touchend", function (event) {
+    const touch = event.changedTouches[0];
+    const moved = !touchStart || Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) > 10;
+    touchStart = null;
+    if (!moved) refreshAudioOnTap();
+  }, { capture: true, passive: true });
+
+  for (const type of ["click", "keydown"]) {
+    document.addEventListener(type, refreshAudioOnTap, { capture: true, passive: true });
   }
 }
 
