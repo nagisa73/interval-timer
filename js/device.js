@@ -89,16 +89,43 @@ function rebuildAudio() {
   const oldContext = audioContext;
   stopPreview();
   audioContext = null;
-  prepareAudio();
 
-  // 鳴っている途中の音が切れないように、古い装置は少し待ってから閉じる
-  setTimeout(function () {
-    try {
-      oldContext.close().catch(function () {});
-    } catch (error) {
-      // 何もしない
-    }
-  }, 2600);
+  // 古い装置が音の出口をつかんだままにならないよう、先に閉じてから作り直す
+  try {
+    oldContext.close().catch(function () {});
+  } catch (error) {
+    // 何もしない
+  }
+  prepareAudio();
+  if (audioContext) verifyAudio(audioContext);
+}
+
+// 音の時計が実際に進んでいるか（iPhone は「動作中」のまま止まっていることがある）
+async function isAudioClockMoving(context) {
+  const before = context.currentTime;
+  await waitMs(200);
+  return context.state === "running" && context.currentTime > before;
+}
+
+// 作り直した装置が本当に動いているか確かめ、止まっていれば立て直す
+async function verifyAudio(context) {
+  await waitMs(250);
+  if (context !== audioContext || await isAudioClockMoving(context)) return;
+
+  // 止める→再開するで動き出すことがある（再開が返ってこないこともあるので待ちすぎない）
+  try {
+    await Promise.race([context.suspend().then(function () { return context.resume(); }), waitMs(400)]);
+  } catch (error) {
+    // 何もしない
+  }
+  if (context !== audioContext || await isAudioClockMoving(context)) return;
+
+  // それでも動かなければ、次のタップでもう一度作り直す
+  audioNeedsRefresh = true;
+  audioBuiltAt = 0;
+  if (document.visibilityState === "visible") {
+    showToast("音を再開するには、もう一度画面をタップしてください");
+  }
 }
 
 // 画面のどこかをタップしたら、音を復活させる
