@@ -15,13 +15,74 @@ let audioContext = null;
 
 function prepareAudio() {
   try {
-    if (!audioContext) {
+    if (!audioContext || audioContext.state === "closed") {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       audioContext = new AudioContextClass();
     }
-    audioContext.resume();
+    resumeAudio();
+
+    // iPhone は、無音を1回流すと音が使える状態になる
+    const source = audioContext.createBufferSource();
+    source.buffer = audioContext.createBuffer(1, 1, 22050);
+    source.connect(audioContext.destination);
+    source.start(0);
   } catch (error) {
     // 音が使えない端末では何もしない
+  }
+}
+
+function resumeAudio() {
+  try {
+    const result = audioContext.resume();
+    if (result) result.catch(function () {});
+  } catch (error) {
+    // 何もしない
+  }
+}
+
+function isAudioRunning() {
+  return audioContext !== null && audioContext.state === "running";
+}
+
+function waitMs(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+// 別のアプリや画面オフから戻ったときに、止まった音を復帰させる
+let audioRecovering = false;
+
+async function recoverAudio() {
+  if (audioRecovering || !state.running || !state.settings.sound) return;
+  audioRecovering = true;
+
+  prepareAudio();
+  await waitMs(400);
+
+  // 再開できなければ、音の装置を作り直す
+  if (!isAudioRunning()) {
+    try {
+      if (audioContext) audioContext.close().catch(function () {});
+    } catch (error) {
+      // 何もしない
+    }
+    audioContext = null;
+    prepareAudio();
+    await waitMs(300);
+  }
+
+  // 端末の制限でタップが必要なときは、そのことを知らせる
+  if (!isAudioRunning() && state.running && document.visibilityState === "visible") {
+    showToast("音を再開するには、画面をタップしてください");
+  }
+  audioRecovering = false;
+}
+
+// 音が止まっているときは、次に画面を触ったタイミングで再開する
+function setupAudioRecovery() {
+  for (const type of ["pointerup", "touchend", "click", "keydown"]) {
+    document.addEventListener(type, function () {
+      if (state.running && state.settings.sound && !isAudioRunning()) prepareAudio();
+    }, { capture: true, passive: true });
   }
 }
 
@@ -32,6 +93,24 @@ function prepareAudio() {
 function playTone(freq, length, delay) {
   if (!audioContext) return;
 
+  if (isAudioRunning()) {
+    scheduleTone(freq, length, delay);
+    return;
+  }
+
+  // 止まっていたら再開を試す。間に合わなかった音は、あとからまとめて鳴らさない
+  const requestedAt = Date.now();
+  try {
+    audioContext.resume().then(function () {
+      if (Date.now() - requestedAt < 250 && isAudioRunning()) scheduleTone(freq, length, delay);
+    }).catch(function () {});
+  } catch (error) {
+    // 何もしない
+  }
+}
+
+// 音を実際に予約する
+function scheduleTone(freq, length, delay) {
   const startTime = audioContext.currentTime + (delay || 0);
   const oscillator = audioContext.createOscillator();  // 音のもと
   const gain = audioContext.createGain();              // 音量の調整

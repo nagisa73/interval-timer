@@ -55,9 +55,25 @@ document.addEventListener("keydown", function (event) {
 document.addEventListener("visibilitychange", function () {
   if (document.visibilityState === "visible" && state.running) {
     keepScreenOn();  // 画面を消さない設定は、切り替えると外れるのでかけ直す
+    recoverAudio();  // 止まった音を復帰させる
     tick();          // 止まっていた間の時間を、すぐに反映する
   }
 });
+
+// ブラウザの「戻る」やアプリの切り替えで、ページがそのまま復元されたとき
+window.addEventListener("pageshow", function (event) {
+  if (!event.persisted || !state.running) return;
+  keepScreenOn();
+  recoverAudio();
+  cancelAnimationFrame(frameId);
+  loop();
+});
+
+// 通話などから画面に戻ったとき
+window.addEventListener("focus", recoverAudio);
+
+// 音が止まっていたら、次に画面を触ったときに再開する
+setupAudioRecovery();
 
 // ホーム画面に追加できるようにする（ファイルを直接開いたときは使えないので読み込まない）
 if (location.protocol === "http:" || location.protocol === "https:") {
