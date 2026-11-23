@@ -46,21 +46,3 @@ function formatClock(totalSec) {
   if (h > 0) return `${h}:${pad2(m)}:${pad2(s)}`;
   return `${pad2(m)}:${pad2(s)}`;
 }
-
-// 秒数を「3:15」の形にする（分の先頭に0を付けない。全体の残り時間用）
-function formatShortClock(totalSec) {
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  if (h > 0) return `${h}:${pad2(m)}:${pad2(s)}`;
-  return `${m}:${pad2(s)}`;
-}
-
-// 秒数を「20秒」「4分」「1分30秒」の形にする
-function formatDuration(totalSec) {
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  if (m > 0 && s > 0) return `${m}分${s}秒`;
-  if (m > 0) return `${m}分`;
-  return `${s}秒`;
-}

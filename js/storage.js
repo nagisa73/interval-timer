@@ -34,6 +34,7 @@ function loadState() {
     if (!text) return false;
 
     const data = JSON.parse(text);
+    const hadPresets = Array.isArray(data.presets);
 
     // ブロックの種類を確認するので、種類を先に読み込む
     state.kinds = normalizeKinds(data.kinds);
@@ -49,8 +50,50 @@ function loadState() {
         backup: normalizePlan(data.presetEdit.backup),
       };
     }
+    removeOldDefaultPreset(hadPresets);
     return true;
   } catch (error) {
     return false;
   }
+}
+
+
+/* ---------- 以前の初期マイセットを取り除く ---------- */
+
+// 以前はじめから入っていた「いつものセット」の中身
+const OLD_DEFAULT_PLAN_TEXT = JSON.stringify([
+  ["準備", 30, "prep"],
+  [4, [[8, [["筋トレ", 20, "work"], ["休憩", 10, "rest"]]], ["大休憩", 240, "rest"]]],
+]);
+
+// メニューの中身を、比べやすい形にする（id は毎回変わるので含めない）
+function planToComparable(items) {
+  return items.map(function (node) {
+    if (node.type === "step") return [node.name, node.seconds, node.kind];
+    return [node.repeat, planToComparable(node.items)];
+  });
+}
+
+// 保存データに残っている「いつものセット」を消す。
+// 今のメニューがその中身のままなら、タバタ式に置き換える
+function removeOldDefaultPreset(hadPresets) {
+  const old = state.presets.find(function (preset) {
+    return preset.id === "default-1" && preset.name === "いつものセット";
+  });
+  if (hadPresets && !old) return;  // すでに処理済み
+
+  if (old) {
+    // 「いつものセット」の中身を編集している途中なら、編集前のメニューに戻す
+    if (state.presetEdit && state.presetEdit.id === old.id) {
+      state.plan = state.presetEdit.backup;
+      state.presetEdit = null;
+    }
+    state.presets = state.presets.filter(function (preset) { return preset !== old; });
+  }
+
+  if (JSON.stringify(planToComparable(state.plan)) === OLD_DEFAULT_PLAN_TEXT) {
+    const tabata = findPreset("default-2") || makeDefaultPresets()[0];
+    state.plan = normalizePlan(tabata.plan);
+  }
+  saveState();
 }

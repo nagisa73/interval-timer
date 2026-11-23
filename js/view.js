@@ -55,7 +55,7 @@ function renderItems(items, parent) {
 //   <button class="block k-work">
 //     <span class="fill"></span>          … ゲージ
 //     <span class="b-name">筋トレ</span>
-//     <span class="b-time">20秒</span>
+//     <span class="b-time">00:20</span>
 //   </button>
 function createStepBlock(node) {
   const block = createEl("button", "block k-" + kindColor(node.kind));
@@ -66,7 +66,7 @@ function createStepBlock(node) {
   block.append(
     createEl("span", "fill"),
     createEl("span", "b-name", node.name),
-    createEl("span", "b-time", formatDuration(node.seconds))
+    createEl("span", "b-time", formatClock(node.seconds))
   );
 
   blockElements.set(node.id, block);
@@ -147,7 +147,7 @@ function updateNowPanel() {
   } else if (!item) {
     $("next").textContent = "";
   } else if (next) {
-    $("next").textContent = "次：" + next.node.name + " " + formatDuration(next.node.seconds);
+    $("next").textContent = "次：" + next.node.name + " " + formatClock(next.node.seconds);
   } else {
     $("next").textContent = "次：終了";
   }
@@ -155,7 +155,7 @@ function updateNowPanel() {
   // 全体の残り時間と、進み具合のバー
   const left = totalRemainingMs();
   const total = totalMs();
-  $("total").textContent = formatShortClock(Math.ceil(left / 1000));
+  $("total").textContent = formatClock(Math.ceil(left / 1000));
   const progress = total > 0 ? (1 - left / total) * 100 : 0;
   $("bar").style.width = progress.toFixed(2) + "%";
 }

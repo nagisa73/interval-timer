@@ -31,6 +31,7 @@
   --muted:     #46525f;  /* 補足の文字 */
   --line:      #76818e;  /* ボタンや入力欄の枠 */
   --divider:   #d3d9e0;  /* 飾りの区切り線 */
+  --group-tint: rgba(15, 23, 32, 0.04);  /* くり返しの枠の中の薄い色 */
 
   /* 種類に選べる色（--c-名前 が濃い色、-soft が薄い色） */
   --c-orange: #c2410c; --c-orange-soft: #fde9df;
@@ -61,6 +62,7 @@
     --muted:     #b8c2cd;
     --line:      #7d8996;
     --divider:   #303a46;
+    --group-tint: rgba(255, 255, 255, 0.04);
 
     --c-orange: #ff8a57; --c-orange-soft: #33201a;
     --c-teal:   #3ccfb6; --c-teal-soft:   #12302b;
@@ -96,6 +98,9 @@
 html {
   box-sizing: border-box;
   height: 100%;
+  height: 100dvh;  /* スマホのアドレスバーを除いた、実際に見えている高さ */
+  overflow: hidden;  /* ページ自体は動かさない（スクロールは .app と .plan の中だけ） */
+  overscroll-behavior: none;  /* 引っ張ったときの跳ね返りや再読み込みを防ぐ */
   /* iPhone の上下の切り欠き部分をよける */
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -108,6 +113,8 @@ html {
 body {
   height: 100%;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-text);
@@ -136,7 +143,9 @@ textarea:focus-visible {
   height: 100%;
   max-width: 520px;
   margin: 0 auto;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: none;
   display: flex;
   flex-direction: column;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -263,12 +272,15 @@ textarea:focus-visible {
 .plan {
   flex: 1 0 auto;    /* 残りの高さを全部使う */
   height: 0;
-  min-height: 200px; /* 狭い画面でも図が見えるように */
+  min-height: 120px; /* これより狭くなるときだけ、画面全体がスクロールする */
   overflow-y: auto;  /* 長いときはこの中だけスクロール */
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-block: 12px 8px;
+  /* 進行中のブロックの外枠が左右で切れないように、見た目の幅を変えずに余白を取る */
+  margin-inline: -4px;
+  padding: 12px 4px 8px;
 }
 .plan-list {
   display: flex;
@@ -341,8 +353,9 @@ textarea:focus-visible {
   display: flex;
   gap: 6px;
   padding: 6px;
-  border: 2px dashed var(--line);
+  border: 1.5px solid var(--line);
   border-radius: 14px;
+  background: var(--group-tint);  /* 入れ子になるほど少しずつ濃くなる */
 }
 .group.active {
   border-style: solid;

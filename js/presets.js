@@ -12,20 +12,6 @@
 function makeDefaultPresets() {
   return [
     {
-      id: "default-1",
-      name: "いつものセット",
-      plan: [
-        makeStep("準備", 30, "prep"),
-        makeGroup(4, [
-          makeGroup(8, [
-            makeStep("筋トレ", 20, "work"),
-            makeStep("休憩", 10, "rest"),
-          ]),
-          makeStep("大休憩", 240, "rest"),
-        ]),
-      ],
-    },
-    {
       id: "default-2",
       name: "タバタ式",
       plan: [
