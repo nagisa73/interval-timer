@@ -123,8 +123,7 @@ function updateNowPanel() {
   const secondsLeft = Math.ceil(state.remainingMs / 1000);
 
   // 色（今のブロックの種類に合わせる）
-  const isPaused = isInProgress() && !state.running;
-  $("now").className = "now k-" + (item ? kindColor(item.node.kind) : "none") + (isPaused ? " is-paused" : "");
+  $("now").className = "now k-" + (item ? kindColor(item.node.kind) : "none");
 
   // 名前
   if (state.finished) {

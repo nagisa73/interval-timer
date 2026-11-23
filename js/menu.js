@@ -48,8 +48,8 @@ function createThemeSwitch() {
 function createSoundSettings() {
   const wrapper = createEl("div", "sound-settings");
   const options = [
-    ["countSound", "残り3秒の音"],
-    ["changeSound", "切り替わりの音"],
+    ["countSound", "残り3秒"],
+    ["changeSound", "切り替わり"],
   ];
 
   for (const [key, label] of options) {

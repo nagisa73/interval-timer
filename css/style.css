@@ -212,10 +212,6 @@ textarea:focus-visible {
   align-items: center;
   gap: 2px 8px;
 }
-/* 一時停止中は、大きな数字の色を薄くする */
-@supports (color: color-mix(in srgb, red, blue)) {
-  .now.is-paused .clock { color: color-mix(in srgb, var(--fg) 70%, var(--kind-soft)); }
-}
 .chip {
   min-width: 0;
   max-width: 100%;
@@ -274,19 +270,18 @@ textarea:focus-visible {
 .total b {
   font-family: var(--font-num);
   font-size: 1.125rem;
-  font-weight: 700;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
 
 /* ---------- 5. ブロックの図 ---------- */
 
-/* 上のカードとブロックの一覧を分ける線 */
+/* 上のカードとブロックの一覧を分ける線（操作ボタンの上の線と同じ） */
 .now-divider {
-  height: 2px;
+  height: 1px;
   margin-top: 8px;
-  border-radius: 999px;
-  background: var(--line);
+  background: var(--divider);
 }
 
 .plan {
