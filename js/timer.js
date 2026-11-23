@@ -48,11 +48,6 @@ function currentItem() {
   return state.runList[state.index] || null;
 }
 
-// 次のブロック（なければ null）
-function nextItem() {
-  return state.runList[state.index + 1] || null;
-}
-
 // 途中か（スタートしたけれど、まだ終わっていない）
 function isInProgress() {
   return state.started && !state.finished;

@@ -39,14 +39,14 @@
        --c-名前-line  : 枠とゲージの色（明るい色は、背景に埋もれないよう濃くする）
        --c-名前-on    : 塗りの上に乗る文字の色
      名前は保存データとの互換のためのもので、実際の色味とは少し違うものもある */
-  --c-orange: #ff8c1a; --c-orange-soft: #ffedda; --c-orange-line: #cc7015; --c-orange-on: #0f1720;
+  --c-orange: #f54600; --c-orange-soft: #ffedda; --c-orange-line: #f54600; --c-orange-on: #0f1720;
   --c-teal:   #0b7a3e; --c-teal-soft:   #d8eae0; --c-teal-line:   #0b7a3e; --c-teal-on:   #ffffff;
   --c-indigo: #0011ee; --c-indigo-soft: #d6d9fc; --c-indigo-line: #0011ee; --c-indigo-on: #ffffff;
   --c-red:    #c0182f; --c-red-soft:    #f5dade; --c-red-line:    #c0182f; --c-red-on:    #ffffff;
-  --c-pink:   #f79ad3; --c-pink-soft:   #feeff8; --c-pink-line:   #b7729c; --c-pink-on:   #0f1720;
+  --c-pink:   #e0409f; --c-pink-soft:   #feeff8; --c-pink-line:   #e0409f; --c-pink-on:   #0f1720;
   --c-purple: #44226e; --c-purple-soft: #e1dce8; --c-purple-line: #44226e; --c-purple-on: #ffffff;
-  --c-blue:   #5fd8ff; --c-blue-soft:   #e5f9ff; --c-blue-line:   #4193ad; --c-blue-on:   #0f1720;
-  --c-green:  #ffe52e; --c-green-soft:  #fffbde; --c-green-line:  #99891c; --c-green-on:  #0f1720;
+  --c-blue:   #0a8fd0; --c-blue-soft:   #e5f9ff; --c-blue-line:   #0a8fd0; --c-blue-on:   #0f1720;
+  --c-green:  #888a00; --c-green-soft:  #fffbde; --c-green-line:  #888a00; --c-green-on:  #0f1720;
 
   --on-kind:   #ffffff;  /* 色付きの背景の上に乗る文字 */
   --danger:    #b91c1c;  /* 削除ボタンなど */
@@ -207,10 +207,7 @@ textarea:focus-visible {
 }
 .now-row {
   display: flex;
-  flex-wrap: wrap;  /* 名前が長いときは、次のブロックを次の行にする */
-  justify-content: space-between;
   align-items: center;
-  gap: 2px 8px;
 }
 .chip {
   min-width: 0;
@@ -235,16 +232,6 @@ textarea:focus-visible {
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-.next {
-  min-width: 0;
-  max-width: 100%;
-  margin-left: auto;  /* カードの右上に置く */
-  text-align: right;
-  overflow-wrap: anywhere;
-  font-family: var(--font-num);
-  font-size: 1rem;
-  font-variant-numeric: tabular-nums;
 }
 .bar {
   height: 8px;
@@ -331,10 +318,9 @@ textarea:focus-visible {
   transform: scaleX(var(--p, 0));
 }
 .block > span:not(.fill) { position: relative; }  /* 文字をゲージより手前に */
-/* 進行中のブロックは、種類の色を少し強めた太い枠で強調する
-   （影で太くしているので、ブロックの大きさや文字の位置は変わらない） */
+/* 進行中のブロックは、カードのブロック名の囲いと同じ色の太い枠で強調する
+   （枠はブロックの外にはみ出して描くので、大きさや文字の位置は変わらない） */
 .block.current {
-  --current-frame: var(--kind-line);  /* 色を混ぜられない古いブラウザでは種類の枠の色そのまま */
   border-color: transparent;
   overflow: visible;  /* 枠をブロックの外側まで描けるようにする */
 }
@@ -344,19 +330,18 @@ textarea:focus-visible {
   content: "";
   position: absolute;
   inset: -4px;
-  border: 6px solid var(--current-frame);
+  border: 6px solid var(--kind);
   border-radius: 14px;
   pointer-events: none;
-}
-@supports (color: color-mix(in srgb, red, blue)) {
-  .block.current {
-    /* ライトでは少し濃く、ダークでは少し明るくなる */
-    --current-frame: color-mix(in srgb, var(--kind-line) 78%, var(--fg));
-  }
 }
 .block.current .fill {
   inset: 1px;  /* ゲージの角が枠の外にはみ出さないようにする */
   opacity: 0.32;
+}
+/* タイマー中は今のブロック以外の枠と背景を少し薄くして、今のブロックを目立たせる */
+#app:not(.is-selecting) .block.is-other {
+  border-color: color-mix(in srgb, var(--kind-line) 50%, transparent);
+  background: color-mix(in srgb, var(--kind-soft) 60%, transparent);
 }
 
 .b-name {

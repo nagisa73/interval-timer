@@ -80,6 +80,129 @@ function soundBell(out, freq, volume, d) {
   }
 }
 
+/* ---------- ゴング ----------
+   金属の響きを重ね、軽く歪ませて、ボクシングのゴングらしい荒さを出している */
+
+const GONG = {
+  freq: 1180 * Math.pow(2, 2 / 12),  // 基本の高さ（Hz）
+  decay: 1.5,       // 余韻の長さ（秒）
+  drive: 2.6,       // 歪みの強さ
+  strikeGap: 0.24,  // 2打のときの間隔（秒）
+  level: 0.54,      // 全体の音量
+  // [高さの倍率, 音量, 余韻の倍率]
+  partials: [
+    [1, 0.25, 1], [1.0065, 0.17, 0.92], [1.59, 0.08, 0.62], [2.14, 0.18, 0.54], [2.153, 0.11, 0.48],
+    [2.83, 0.15, 0.38], [3.71, 0.11, 0.28], [4.66, 0.08, 0.2], [5.87, 0.058, 0.14], [7.31, 0.035, 0.09],
+  ],
+  // 音程を少しずつずらして濁りを作る
+  detune: [0.0041, -0.0067, 0.0093, -0.0029, 0.0112, -0.0084, 0.0058, -0.0103, 0.0072, -0.0049],
+  detuneAmount: 0.7,
+  tail: 0.035,      // 金属がこすれるような余韻の音量
+};
+
+// 歪みのかかり方を決める曲線
+function makeGongCurve() {
+  const size = 2048;
+  const curve = new Float32Array(size);
+  const peak = Math.tanh(GONG.drive);
+  for (let i = 0; i < size; i++) {
+    const x = (i / (size - 1)) * 2 - 1;
+    curve[i] = Math.tanh(GONG.drive * x) / peak;
+  }
+  return curve;
+}
+
+// ゴングの金属音を1つ鳴らす
+function gongPartial(ctx, input, time, freq, volume, d) {
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  oscillator.frequency.setValueAtTime(freq * 1.006, time);
+  oscillator.frequency.exponentialRampToValueAtTime(freq, time + 0.012);
+  gain.gain.setValueAtTime(0.0001, time);
+  gain.gain.exponentialRampToValueAtTime(volume, time + 0.0008);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * 0.42), time + Math.max(0.012, d * 0.09));
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + d);
+  oscillator.connect(gain);
+  gain.connect(input);
+  oscillator.start(time);
+  oscillator.stop(time + d + 0.02);
+}
+
+// 打った瞬間の音や、こすれるような音を鳴らす
+function gongNoise(ctx, input, time, freq, q, volume, d) {
+  const size = Math.max(1, Math.floor(ctx.sampleRate * d));
+  const buffer = ctx.createBuffer(1, size, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  filter.type = "bandpass";
+  filter.frequency.value = Math.min(11000, freq);
+  filter.Q.value = q;
+  gain.gain.setValueAtTime(volume, time);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + d);
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(input);
+  source.start(time);
+}
+
+// ゴングを1回打つ
+function gongHit(ctx, input, time, strength) {
+  const f = GONG.freq;
+  gongNoise(ctx, input, time, f * 4.6, 1.1, 0.38 * strength, 0.018);
+
+  GONG.partials.forEach(function (p, i) {
+    const volume = p[1] * strength;
+    const d = Math.max(0.04, GONG.decay * p[2]);
+    gongPartial(ctx, input, time, f * p[0], Math.min(0.3, volume), d);
+    gongPartial(ctx, input, time, f * p[0] * (1 + GONG.detune[i] * GONG.detuneAmount),
+      Math.min(0.2, volume * 0.62), Math.max(0.04, GONG.decay * p[2] * 0.82));
+  });
+
+  gongNoise(ctx, input, time, f * 2.9, 2.4, GONG.tail * strength, GONG.decay * 0.72);
+  gongNoise(ctx, input, time, f * 5.4, 1.5, GONG.tail * 0.72 * strength, GONG.decay * 0.42);
+}
+
+// ゴングを strikes 回打つ（2回目以降は少し弱く打つ）
+function soundGong(out, strikes) {
+  const ctx = out.ctx;
+  const input = ctx.createGain();
+  const shaper = ctx.createWaveShaper();
+  const highpass = ctx.createBiquadFilter();
+  const lowpass = ctx.createBiquadFilter();
+  const compressor = ctx.createDynamicsCompressor();
+  const level = ctx.createGain();
+
+  shaper.curve = makeGongCurve();
+  shaper.oversample = "4x";
+  highpass.type = "highpass";
+  highpass.frequency.value = 120;
+  highpass.Q.value = 0.6;
+  lowpass.type = "lowpass";
+  lowpass.frequency.value = 18000;
+  lowpass.Q.value = 0.7;
+  compressor.threshold.value = -13;
+  compressor.ratio.value = 5;
+  compressor.attack.value = 0.001;
+  compressor.release.value = 0.12;
+  level.gain.value = GONG.level;
+
+  input.connect(shaper);
+  shaper.connect(highpass);
+  highpass.connect(lowpass);
+  lowpass.connect(compressor);
+  compressor.connect(level);
+  level.connect(out.bus);
+
+  for (let i = 0; i < strikes; i++) {
+    gongHit(ctx, input, out.start + i * GONG.strikeGap, i === 0 ? 1 : 0.9);
+  }
+}
+
 const SOUND_LIST = [
   { id: "beep", name: "ピッ", play: function (o) {
     soundTone(o, { f: 660, d: 0.12, v: 0.35 });
@@ -156,9 +279,10 @@ const SOUND_LIST = [
     soundBell(o, 880, 0.22, 1.1);
   } },
   { id: "gong", name: "ゴング", play: function (o) {
-    soundBell(o, 392, 0.27, 1.3);
-    soundBell(o, 396, 0.1, 1);
-    soundNoise(o, 0.03, 3000, 0.12);
+    soundGong(o, 1);
+  } },
+  { id: "gong2", name: "ゴング（2打）", play: function (o) {
+    soundGong(o, 2);
   } },
 ];
 

@@ -119,7 +119,6 @@ function updateView() {
 // 上の「今のブロック」の表示
 function updateNowPanel() {
   const item = currentItem();
-  const next = nextItem();
   const secondsLeft = Math.ceil(state.remainingMs / 1000);
 
   // 色（今のブロックの種類に合わせる）
@@ -127,7 +126,7 @@ function updateNowPanel() {
 
   // 名前
   if (state.finished) {
-    $("chip").textContent = "完了";
+    $("chip").textContent = "終了";
   } else if (item) {
     $("chip").textContent = item.node.name;
   } else {
@@ -136,17 +135,6 @@ function updateNowPanel() {
 
   // 大きな残り時間
   $("clock").textContent = formatBlockTime(state.finished ? 0 : secondsLeft);
-
-  // 次のブロック
-  if (state.finished) {
-    $("next").textContent = "おつかれさまでした";
-  } else if (!item) {
-    $("next").textContent = "";
-  } else if (next) {
-    $("next").textContent = "次：" + next.node.name + " " + formatBlockTime(next.node.seconds);
-  } else {
-    $("next").textContent = "次：終了";
-  }
 
   // 全体の残り時間と、進み具合のバー
   const left = totalRemainingMs();
@@ -184,10 +172,13 @@ function updateBlocks() {
     if (activeIndex !== null && item) scrollBlockIntoView(blockElements.get(item.node.id));
   }
 
+  const hasCurrent = state.started && item !== null && blockElements.has(item.node.id);
+
   for (const [id, block] of blockElements) {
     // スタート前は強調しない
-    const isCurrent = state.started && item !== null && item.node.id === id;
+    const isCurrent = hasCurrent && item.node.id === id;
     block.classList.toggle("current", isCurrent);
+    block.classList.toggle("is-other", hasCurrent && !isCurrent);  // 今のブロック以外は少し薄く
 
     // --p は CSS に渡す値（0 = 空、1 = 満タン）
     let ratio = 0;
