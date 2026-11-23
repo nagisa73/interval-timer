@@ -15,7 +15,8 @@ const state = {
 
   // オン・オフの設定
   settings: {
-    sound: true,  // 音を鳴らす
+    sound: true,    // 音を鳴らす
+    theme: "auto",  // 画面の色（auto：端末に合わせる / light / dark）
   },
 
   // ブロックの種類 [{ id, name, color }]

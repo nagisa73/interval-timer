@@ -38,7 +38,12 @@ function pad2(n) {
   return String(n).padStart(2, "0");
 }
 
-// 秒数を「03:15」の形にする（1時間以上なら「1:03:15」）
+// ブロック1つ分の時間を「03:15」の形にする（60分ちょうどは「60:00」）
+function formatBlockTime(totalSec) {
+  return `${pad2(Math.floor(totalSec / 60))}:${pad2(totalSec % 60)}`;
+}
+
+// 全体の時間を「03:15」の形にする（1時間以上なら「1:03:15」）
 function formatClock(totalSec) {
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);

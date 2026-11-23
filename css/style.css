@@ -47,37 +47,39 @@
   --danger:    #b91c1c;  /* 削除ボタンなど */
   --scrim:     rgba(5, 10, 15, 0.6);  /* パネルの後ろを暗くする幕 */
 
-  /* BIZ UD ゴシックは、読みやすさを考えて作られたユニバーサルデザインの書体 */
-  --font-text: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", "Meiryo", "Noto Sans JP", system-ui, sans-serif;
-  --font-num:  "BIZ UDGothic", "Hiragino Sans", "Yu Gothic UI", "Meiryo", "Noto Sans JP", system-ui, sans-serif;
+  /* iPhone・Mac では本物のシステムフォント（San Francisco ＋ ヒラギノ）を使う。
+     それ以外の端末では、形が近い Inter（英数字）と Noto Sans JP（日本語）を使う */
+  --font-text: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Inter", "Noto Sans JP", "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
+  --font-num:  var(--font-text);
+
+  color-scheme: light;
 }
 
-/* 暗い画面（ダークモード）のときの色 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:        #0b0f14;
-    --surface:   #151b23;
-    --surface-2: #242d38;
-    --fg:        #f3f6f9;
-    --muted:     #b8c2cd;
-    --line:      #7d8996;
-    --divider:   #303a46;
-    --group-tint: rgba(255, 255, 255, 0.04);
+/* 暗い画面（ダークモード）のときの色。
+   どちらを使うかは <html data-theme="…"> で決まる（device.js の applyTheme） */
+:root[data-theme="dark"] {
+  --bg:        #0b0f14;
+  --surface:   #151b23;
+  --surface-2: #242d38;
+  --fg:        #f3f6f9;
+  --muted:     #b8c2cd;
+  --line:      #7d8996;
+  --divider:   #303a46;
+  --group-tint: rgba(255, 255, 255, 0.04);
 
-    --c-orange: #ff8a57; --c-orange-soft: #33201a;
-    --c-teal:   #3ccfb6; --c-teal-soft:   #12302b;
-    --c-indigo: #a3b4e8; --c-indigo-soft: #20283e;
-    --c-red:    #ff8a8f; --c-red-soft:    #381e21;
-    --c-pink:   #f58cc6; --c-pink-soft:   #351c2b;
-    --c-purple: #c4a6f5; --c-purple-soft: #2a213d;
-    --c-blue:   #7dbcf8; --c-blue-soft:   #172a3f;
-    --c-green:  #9bd67a; --c-green-soft:  #1f2f18;
+  --c-orange: #ff8a57; --c-orange-soft: #33201a;
+  --c-teal:   #3ccfb6; --c-teal-soft:   #12302b;
+  --c-indigo: #a3b4e8; --c-indigo-soft: #20283e;
+  --c-red:    #ff8a8f; --c-red-soft:    #381e21;
+  --c-pink:   #f58cc6; --c-pink-soft:   #351c2b;
+  --c-purple: #c4a6f5; --c-purple-soft: #2a213d;
+  --c-blue:   #7dbcf8; --c-blue-soft:   #172a3f;
+  --c-green:  #9bd67a; --c-green-soft:  #1f2f18;
 
-    --on-kind:   #0b0f14;
-    --danger:    #ff8a8f;
-    --scrim:     rgba(0, 0, 0, 0.7);
-    color-scheme: dark;
-  }
+  --on-kind:   #0b0f14;
+  --danger:    #ff8a8f;
+  --scrim:     rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
 }
 
 /* ブロックの色。class="k-orange" などを付けると、
@@ -222,20 +224,21 @@ textarea:focus-visible {
 .clock {
   text-align: center;
   font-family: var(--font-num);
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   /* 画面の幅と高さに合わせて大きさを変える */
-  font-size: min(28vw, 30vh, 8rem);
-  line-height: 1.05;
+  font-size: min(24.5vw, 30vh, 7.25rem);
+  line-height: 1.1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-/* 1時間以上（1:00:00）は桁が増えるので小さくする */
-.clock.long { font-size: min(20vw, 24vh, 5.75rem); }
 .next {
   min-height: 1.5em;
   text-align: center;
   color: var(--muted);
+  font-family: var(--font-num);
   font-size: 1rem;
+  font-variant-numeric: tabular-nums;
 }
 .bar {
   height: 8px;
@@ -317,17 +320,7 @@ textarea:focus-visible {
 }
 .block > span:not(.fill) { position: relative; }  /* 文字をゲージより手前に */
 .block.current { box-shadow: 0 0 0 2px var(--fg); }
-.block.current .fill { opacity: 0.22; }
-/* 明るい場所でも進みがわかるよう、下にくっきりした線のゲージも出す */
-.block.current::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 5px;
-  background: var(--fg);
-  transform-origin: left;
-  transform: scaleX(var(--p, 0));
-}
+.block.current .fill { opacity: 0.32; }
 
 .b-name {
   min-width: 0;
@@ -342,8 +335,8 @@ textarea:focus-visible {
   max-width: 100%;
   overflow-wrap: anywhere;
   font-family: var(--font-num);
-  font-weight: 700;
-  font-size: 1.375rem;
+  font-weight: 600;
+  font-size: 1.3125rem;
   line-height: 1.25;
   font-variant-numeric: tabular-nums;
 }
@@ -383,8 +376,8 @@ textarea:focus-visible {
 }
 .g-count {
   font-family: var(--font-num);
-  font-weight: 700;
-  font-size: 1.25rem;
+  font-weight: 600;
+  font-size: 1.0625rem;
   line-height: 1;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -556,7 +549,7 @@ body.is-dragging .plan .group { padding-block: 12px; }
   .g-body { gap: 4px; }
   /* 文字を大きくする設定でも、セット数の列が中身の幅を奪いすぎないようにする */
   .g-label { flex-basis: min(3rem, 56px); padding-inline: 1px; }
-  .g-count { font-size: min(1rem, 20px); }
+  .g-count { font-size: min(0.9375rem, 18px); letter-spacing: -0.02em; }
   .group .block { padding: 6px 8px; gap: 4px; }
   .group .group .block .b-name { font-size: 0.9375rem; }
   .group .group .block .b-time { font-size: 1.125rem; }
@@ -606,8 +599,8 @@ body.is-dragging .plan .group { padding-block: 12px; }
 .play {
   width: 80px;
   height: 80px;
-  background: var(--kind);
-  color: var(--on-kind);
+  background: var(--fg);  /* ブロックの種類に関係なく同じ色 */
+  color: var(--bg);
 }
 .play svg { width: 38px; height: 38px; }
 
@@ -786,15 +779,15 @@ body.is-dragging .plan .group { padding-block: 12px; }
   scroll-snap-align: center;
   scroll-snap-stop: normal;
   font-family: var(--font-num);
-  font-weight: 400;
-  font-size: 1.25rem;
+  font-weight: 500;
+  font-size: 1.1875rem;
   line-height: 1;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 .wheel-item.selected {
-  font-weight: 700;
-  font-size: 1.5rem;
+  font-weight: 600;
+  font-size: 1.375rem;
   color: var(--fg);
 }
 .wheel-unit {
@@ -855,10 +848,59 @@ body.is-dragging .plan .group { padding-block: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn.wide { grid-column: 1 / -1; }
 
+/* メニューの1つのまとまり（マイセット・種類・設定） */
+.menu-section {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 14px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+}
+.menu-section h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+.menu-section .note + .presets,
+.menu-section .note + .kind-list { margin-top: 2px; }
+.menu-section .preset,
+.menu-section .preset-edit,
+.menu-section .btn { background: var(--surface); }
+.menu-section .preset:hover,
+.menu-section .preset-edit:hover,
+.menu-section .btn:hover { background: var(--surface-2); }
+.menu-section .toggle { border-bottom: 0; padding: 0; }
+
+/* 画面の色の切り替え */
+.theme-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.theme-switch button {
+  min-height: 46px;
+  padding: 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.theme-switch button:hover { background: var(--surface-2); }
+.theme-switch button[aria-pressed="true"] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+.theme-switch button[aria-pressed="true"]::before { content: "✓ "; }
+
 /* メニューのマイセット */
 .presets { display: grid; gap: 8px; }
 .preset {
   display: grid;
+  align-content: center;  /* 説明がないときも名前を上下の中央に置く */
   gap: 2px;
   width: 100%;
   min-height: 52px;
@@ -967,6 +1009,29 @@ body.is-dragging .plan .group { padding-block: 12px; }
 }
 
 
+/* スマホを横向きにしたときの案内（画面全体をおおう） */
+.rotate-notice {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg);
+  color: var(--fg);
+  text-align: center;
+}
+.rotate-notice svg { width: 64px; height: 64px; }
+.rotate-notice p {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+
 /* ---------- 9. 見やすさの設定 ---------- */
 
 /* 端末で「コントラストを上げる」にしている人向け */
@@ -976,8 +1041,8 @@ body.is-dragging .plan .group { padding-block: 12px; }
     --fg: #000000; --muted: #000000; --line: #000000; --divider: #000000;
   }
 }
-@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
-  :root {
+@media (prefers-contrast: more) {
+  :root[data-theme="dark"] {
     --bg: #000000; --surface: #000000; --surface-2: #1c1c1c;
     --fg: #ffffff; --muted: #ffffff; --line: #ffffff; --divider: #ffffff;
   }
@@ -985,8 +1050,8 @@ body.is-dragging .plan .group { padding-block: 12px; }
 
 /* Windows のハイコントラストなど、端末が色を決めるとき */
 @media (forced-colors: active) {
-  .bar span,
-  .block.current::after { background: Highlight; forced-color-adjust: none; }
+  .bar span { background: Highlight; forced-color-adjust: none; }
+  .block.current .fill { background: Highlight; forced-color-adjust: none; opacity: 0.4; }
   .block.current { outline: 3px solid Highlight; }
   .group.active > .g-label,
   .group.selected > .g-label,

@@ -61,6 +61,30 @@ document.addEventListener("visibilitychange", function () {
 });
 
 
+// スマホを横向きにしたとき
+window.addEventListener("resize", updateRotateNotice);
+window.addEventListener("orientationchange", updateRotateNotice);
+if (window.screen.orientation) {
+  window.screen.orientation.addEventListener("change", updateRotateNotice);
+}
+updateRotateNotice();
+tryLockPortrait();
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "visible") tryLockPortrait();
+});
+
+// ホーム画面に追加できるようにする（ファイルを直接開いたときは使えないので読み込まない）
+if (location.protocol === "http:" || location.protocol === "https:") {
+  const manifestLink = document.createElement("link");
+  manifestLink.rel = "manifest";
+  manifestLink.href = "manifest.webmanifest";
+  document.head.append(manifestLink);
+}
+
+// 「自動」のときは、端末のライト・ダークの変更についていく
+darkModeQuery.addEventListener("change", applyTheme);
+
+
 /* ---------- 2. 保存されていたメニューを読み込む ---------- */
 
 const loaded = loadState();
@@ -72,5 +96,6 @@ if (!loaded) {
 
 /* ---------- 3. 画面を表示 ---------- */
 
+applyTheme();
 buildRunList();
 renderPlan();

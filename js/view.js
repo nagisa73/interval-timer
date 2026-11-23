@@ -66,7 +66,7 @@ function createStepBlock(node) {
   block.append(
     createEl("span", "fill"),
     createEl("span", "b-name", node.name),
-    createEl("span", "b-time", formatClock(node.seconds))
+    createEl("span", "b-time", formatBlockTime(node.seconds))
   );
 
   blockElements.set(node.id, block);
@@ -123,9 +123,7 @@ function updateNowPanel() {
   const secondsLeft = Math.ceil(state.remainingMs / 1000);
 
   // 色（今のブロックの種類に合わせる）
-  const colorClass = "k-" + (item ? kindColor(item.node.kind) : "none");
-  $("now").className = "now " + colorClass;
-  $("playBtn").className = "ctl play " + colorClass;
+  $("now").className = "now k-" + (item ? kindColor(item.node.kind) : "none");
 
   // 名前
   if (state.finished) {
@@ -137,9 +135,7 @@ function updateNowPanel() {
   }
 
   // 大きな残り時間
-  const clockText = formatClock(state.finished ? 0 : secondsLeft);
-  $("clock").textContent = clockText;
-  $("clock").classList.toggle("long", clockText.length > 5);  // 1時間以上は小さくする
+  $("clock").textContent = formatBlockTime(state.finished ? 0 : secondsLeft);
 
   // 次のブロック
   if (state.finished) {
@@ -147,7 +143,7 @@ function updateNowPanel() {
   } else if (!item) {
     $("next").textContent = "";
   } else if (next) {
-    $("next").textContent = "次：" + next.node.name + " " + formatClock(next.node.seconds);
+    $("next").textContent = "次：" + next.node.name + " " + formatBlockTime(next.node.seconds);
   } else {
     $("next").textContent = "次：終了";
   }
@@ -226,7 +222,7 @@ function updateControls() {
 function updateTitle() {
   const item = currentItem();
   if (state.running && item) {
-    document.title = formatClock(Math.ceil(state.remainingMs / 1000)) + " " + item.node.name;
+    document.title = formatBlockTime(Math.ceil(state.remainingMs / 1000)) + " " + item.node.name;
   } else {
     document.title = "インターバルタイマー";
   }

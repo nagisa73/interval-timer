@@ -44,6 +44,9 @@ function loadState() {
     if (data.settings && typeof data.settings.sound === "boolean") {
       state.settings.sound = data.settings.sound;
     }
+    if (data.settings && ["auto", "light", "dark"].includes(data.settings.theme)) {
+      state.settings.theme = data.settings.theme;
+    }
     if (data.presetEdit && findPreset(data.presetEdit.id)) {
       state.presetEdit = {
         id: data.presetEdit.id,

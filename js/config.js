@@ -9,8 +9,8 @@ const CONFIG = {
   // 保存するときの名前（変えると、今までの保存内容は読み込まれなくなる）
   storageKey: "interval-timer-v1",
 
-  // 1つのブロックの長さの上限（秒）。5999秒 = 99分59秒
-  maxSeconds: 5999,
+  // 1つのブロックの長さの上限（秒）。3600秒 = 60分
+  maxSeconds: 3600,
 
   // くり返しのセット数の上限
   maxRepeat: 99,
@@ -44,6 +44,9 @@ const CONFIG = {
 
   // マイセットの説明の最大文字数
   maxPresetDescLength: 60,
+
+  // 画面の短い辺がこの幅（px）未満のタッチ端末をスマホとして扱う
+  phoneMaxShortSide: 600,
 
   // スマホで長押しと判定するまでの時間（ミリ秒）
   dragPressMs: 280,

@@ -193,7 +193,7 @@ function createPresetManager() {
     wrapper.append(row);
   }
 
-  wrapper.append(makeButton("＋ 今のメニューをマイセットに保存", "btn", openPresetCreator));
+  wrapper.append(makeButton("＋ 今のメニューを保存", "btn", openPresetCreator));
   return wrapper;
 }
 

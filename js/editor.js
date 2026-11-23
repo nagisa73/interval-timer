@@ -160,6 +160,11 @@ function createTimeControls(node) {
     if (minutesWheel.getValue() === 0 && secondsWheel.getValue() === 0) {
       secondsWheel.setValue(1);
     }
+    // 上限を超えるとき（60分30秒など）は、上限ちょうどに秒を合わせる
+    const maxMinutes = Math.floor(CONFIG.maxSeconds / 60);
+    if (minutesWheel.getValue() === maxMinutes && secondsWheel.getValue() > CONFIG.maxSeconds % 60) {
+      secondsWheel.setValue(CONFIG.maxSeconds % 60);
+    }
     commitPlanChange();
   }
 

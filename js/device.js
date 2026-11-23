@@ -70,6 +70,60 @@ function signal(type) {
 }
 
 
+/* ---------- スマホの横向き ---------- */
+
+// パソコンやタブレットは対象外
+function isPhone() {
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+  const shortSide = Math.min(window.screen.width, window.screen.height);
+  return isTouch && shortSide < CONFIG.phoneMaxShortSide;
+}
+
+// 縦向きに固定できる環境（ホーム画面に追加したアプリなど）なら固定する。
+// できない環境では失敗するので、そのときは下の案内表示にまかせる
+async function tryLockPortrait() {
+  const orientation = window.screen.orientation;
+  if (!isPhone() || !orientation || typeof orientation.lock !== "function") return;
+  try {
+    await orientation.lock("portrait");
+  } catch (error) {
+    // 固定できない環境では何もしない
+  }
+  updateRotateNotice();
+}
+
+// 固定できないときは、横向きにしたら「縦向きにしてください」の案内で画面をおおう
+function isPhoneLandscape() {
+  if (!isPhone()) return false;
+
+  // 文字入力のキーボードで画面が狭くなっても誤判定しないよう、端末の向きを優先して使う
+  if (window.screen.orientation && window.screen.orientation.type) {
+    return window.screen.orientation.type.startsWith("landscape");
+  }
+  return window.innerWidth > window.innerHeight;
+}
+
+function updateRotateNotice() {
+  $("rotateNotice").hidden = !isPhoneLandscape();
+}
+
+
+/* ---------- ライト・ダーク ---------- */
+
+const darkModeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+// 設定（auto / light / dark）に合わせて画面の色を切り替える
+function applyTheme() {
+  const choice = state.settings.theme;
+  const useDark = choice === "dark" || (choice !== "light" && darkModeQuery.matches);
+  const root = document.documentElement;
+  root.dataset.theme = useDark ? "dark" : "light";
+
+  // スマホのブラウザのバーの色も合わせる
+  $("themeColor").content = getComputedStyle(root).getPropertyValue("--bg").trim();
+}
+
+
 /* ---------- 画面を消さない ---------- */
 
 // 画面を点けたままにしておく「鍵」。タイマー中だけ持っておく
