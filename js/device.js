@@ -52,7 +52,7 @@ function waitMs(ms) {
 let audioRecovering = false;
 
 async function recoverAudio() {
-  if (audioRecovering || !state.running || !state.settings.sound) return;
+  if (audioRecovering || !state.running || !hasAnySound()) return;
   audioRecovering = true;
 
   prepareAudio();
@@ -81,20 +81,23 @@ async function recoverAudio() {
 function setupAudioRecovery() {
   for (const type of ["pointerup", "touchend", "click", "keydown"]) {
     document.addEventListener(type, function () {
-      if (state.running && state.settings.sound && !isAudioRunning()) prepareAudio();
+      if (state.running && hasAnySound() && !isAudioRunning()) prepareAudio();
     }, { capture: true, passive: true });
   }
 }
 
-// 「ピッ」という音を1回鳴らす
-//   freq   : 音の高さ（Hz）
-//   length : 長さ（秒）
-//   delay  : 何秒後に鳴らすか（省略すると今すぐ）
-function playTone(freq, length, delay) {
-  if (!audioContext) return;
+// どちらかの合図で音を使う設定か
+function hasAnySound() {
+  return state.settings.countSound !== SOUND_NONE || state.settings.changeSound !== SOUND_NONE;
+}
+
+// sounds.js の音を1回鳴らす（isPreview は設定画面での試聴）
+function playSound(id, isPreview) {
+  const sound = findSound(id);
+  if (!sound || !audioContext) return;
 
   if (isAudioRunning()) {
-    scheduleTone(freq, length, delay);
+    scheduleSound(sound, isPreview);
     return;
   }
 
@@ -102,7 +105,7 @@ function playTone(freq, length, delay) {
   const requestedAt = Date.now();
   try {
     audioContext.resume().then(function () {
-      if (Date.now() - requestedAt < 250 && isAudioRunning()) scheduleTone(freq, length, delay);
+      if (Date.now() - requestedAt < 250 && isAudioRunning()) scheduleSound(sound, isPreview);
     }).catch(function () {});
   } catch (error) {
     // 何もしない
@@ -110,23 +113,43 @@ function playTone(freq, length, delay) {
 }
 
 // 音を実際に予約する
-function scheduleTone(freq, length, delay) {
-  const startTime = audioContext.currentTime + (delay || 0);
-  const oscillator = audioContext.createOscillator();  // 音のもと
-  const gain = audioContext.createGain();              // 音量の調整
+function scheduleSound(sound, isPreview) {
+  try {
+    if (isPreview) stopPreview();
 
-  oscillator.frequency.value = freq;
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
+    const bus = audioContext.createGain();
+    bus.connect(audioContext.destination);
+    if (isPreview) previewBus = bus;
 
-  // 急に鳴らしたり止めたりすると「プツッ」とノイズが出るので、
-  // 音量をすばやく上げて、なめらかに下げる
-  gain.gain.setValueAtTime(0.0001, startTime);
-  gain.gain.exponentialRampToValueAtTime(CONFIG.sound.volume, startTime + 0.015);
-  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + length);
+    sound.play({ ctx: audioContext, bus: bus, start: audioContext.currentTime + 0.01 });
 
-  oscillator.start(startTime);
-  oscillator.stop(startTime + length + 0.02);
+    // 鳴り終わったら片付ける（いちばん長い音でも2秒以内）
+    setTimeout(function () { bus.disconnect(); }, 2500);
+  } catch (error) {
+    // 音が使えない端末では何もしない
+  }
+}
+
+// 試聴中の音。次の音を試すときに止める
+let previewBus = null;
+
+function stopPreview() {
+  if (!previewBus) return;
+  try {
+    const now = audioContext.currentTime;
+    previewBus.gain.setValueAtTime(previewBus.gain.value, now);
+    previewBus.gain.linearRampToValueAtTime(0, now + 0.015);
+  } catch (error) {
+    // 何もしない
+  }
+  previewBus = null;
+}
+
+// 設定画面で音を試聴する
+function previewSound(id) {
+  prepareAudio();
+  stopPreview();
+  playSound(id, true);
 }
 
 
@@ -135,16 +158,13 @@ function scheduleTone(freq, length, delay) {
 // type には次のどれかを渡す
 //   "count"  : 残り3秒の合図
 //   "change" : ブロックが切り替わった合図
-//   "finish" : 全部終わった合図
+//   "finish" : 全部終わった合図（切り替わりと同じ音）
 function signal(type) {
-  if (!state.settings.sound) return;
-
   if (type === "count") {
-    playTone(CONFIG.sound.count.freq, CONFIG.sound.count.length);
+    playSound(state.settings.countSound);
   }
-  // 全部終わったときも、ブロックが終わったときと同じ音にする
   if (type === "change" || type === "finish") {
-    playTone(CONFIG.sound.change.freq, CONFIG.sound.change.length);
+    playSound(state.settings.changeSound);
   }
 }
 

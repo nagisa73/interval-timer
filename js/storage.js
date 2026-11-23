@@ -53,8 +53,14 @@ function loadState() {
     state.plan = normalizePlan(data.plan);
     state.presets = normalizePresets(data.presets);
 
-    if (data.settings && typeof data.settings.sound === "boolean") {
-      state.settings.sound = data.settings.sound;
+    if (data.settings) {
+      // 以前の「音を鳴らす」をオフにしていた場合は、どちらも「鳴らさない」にする
+      if (data.settings.sound === false) {
+        state.settings.countSound = SOUND_NONE;
+        state.settings.changeSound = SOUND_NONE;
+      }
+      if (isSoundId(data.settings.countSound)) state.settings.countSound = data.settings.countSound;
+      if (isSoundId(data.settings.changeSound)) state.settings.changeSound = data.settings.changeSound;
     }
     if (data.settings && ["auto", "light", "dark"].includes(data.settings.theme)) {
       state.settings.theme = data.settings.theme;

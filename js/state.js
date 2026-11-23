@@ -15,7 +15,8 @@ const state = {
 
   // オン・オフの設定
   settings: {
-    sound: true,    // 音を鳴らす
+    countSound: "beep",   // 残り3秒の音（sounds.js の id。"none" は鳴らさない）
+    changeSound: "ping",  // ブロックが切り替わるときの音
     theme: "auto",  // 画面の色（auto：端末に合わせる / light / dark）
   },
 

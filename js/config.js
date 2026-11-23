@@ -34,13 +34,6 @@ const CONFIG = {
   // ホイールピッカーの1行の高さ（px）
   wheelItemHeight: 40,
 
-  // 音の設定。freq は音の高さ（Hz）、length は長さ（秒）
-  sound: {
-    volume: 0.35,
-    count:  { freq: 660, length: 0.12 },  // 残り3秒の「ピッ」
-    change: { freq: 990, length: 0.45 },  // ブロックが切り替わる「ピーン」
-  },
-
   // くり返しの入れ子の上限（スマホの横幅で読める段数）
   maxNestDepth: 3,
 

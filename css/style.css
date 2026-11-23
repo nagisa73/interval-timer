@@ -774,6 +774,7 @@ body.is-dragging .plan .group { padding-block: 12px; }
   gap: 8px;
   padding-block: 6px;
   background: var(--surface);
+  box-shadow: 0 0 0 2px var(--surface);  /* 下を通るリストの枠がはみ出して見えないようにする */
 }
 .sheet-title { min-width: 0; }
 .sheet-bar .icon-btn { flex: none; margin-right: -8px; }
@@ -973,7 +974,6 @@ body.is-dragging .plan .group { padding-block: 12px; }
 .menu-section .preset:hover,
 .menu-section .preset-edit:hover,
 .menu-section .btn:hover { background: var(--surface-2); }
-.menu-section .toggle { border-bottom: 0; padding: 0; }
 
 /* 画面の色の切り替え */
 .theme-switch {
@@ -1086,23 +1086,68 @@ body.is-dragging .plan .group { padding-block: 12px; }
 .swatch[aria-pressed="true"] { border-color: var(--fg); }
 .swatch[aria-pressed="true"]::after { content: "✓"; }
 
-/* メニューのオン・オフ */
-.toggle {
+/* 音の設定 */
+.sound-settings { display: grid; gap: 6px; }
+.sound-setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 1rem;
+  text-align: left;
+}
+.sound-setting:hover { background: var(--surface-2); }
+.sound-setting b { font-weight: 700; }
+
+/* 音を選ぶ画面 */
+.sound-list { display: grid; gap: 6px; }
+.sound-option {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  min-height: 48px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--divider);
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  text-align: left;
+}
+.sound-option:hover { background: var(--surface-2); }
+.sound-option b {
+  display: block;
+  min-width: 0;
   font-size: 1rem;
+  line-height: 1.35;
 }
-.toggle input {
+/* 選択中は太い枠と ✓ で示す（大きさが変わらないよう影で太くする） */
+.sound-option[aria-pressed="true"] {
+  border-color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--fg);
+  background: var(--surface-2);
+}
+.sound-option[aria-pressed="true"]::after {
+  content: "✓";
   flex: none;
-  width: 26px;
-  height: 26px;
-  accent-color: var(--fg);
+  font-size: 1.25rem;
+  font-weight: 700;
 }
+/* 長いリストでも「戻る」がいつでも押せるようにする */
+.btn.sound-back {
+  position: sticky;
+  bottom: 8px;
+  z-index: 2;
+  background: var(--surface);
+}
+.btn.sound-back:hover { background: var(--surface-2); }
 .note {
   margin: 0;
   font-size: 0.875rem;
