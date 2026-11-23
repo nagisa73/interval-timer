@@ -44,13 +44,15 @@
     <section class="now" id="now" aria-live="polite">
       <div class="now-row">
         <span class="chip" id="chip"></span>   <!-- 今のブロックの名前 -->
-        <span class="pause-label" id="pauseLabel" hidden>一時停止中</span>
+        <div class="next" id="next"></div>     <!-- 次のブロック -->
       </div>
       <div class="clock" id="clock" role="timer">00:00</div>  <!-- 大きな残り時間 -->
-      <div class="next" id="next"></div>                       <!-- 次のブロック -->
-      <div class="bar"><span id="bar"></span></div>            <!-- 全体の進み具合 -->
       <div class="total"><span>全体の残り</span><b id="total">0:00</b></div>
+      <div class="bar"><span id="bar"></span></div>            <!-- 全体の進み具合 -->
     </section>
+
+    <!-- カードとブロックの図の区切り線 -->
+    <div class="now-divider" aria-hidden="true"></div>
 
     <!-- ===== ブロックの図（JavaScriptで中身を作る） ===== -->
     <section class="plan" id="plan" aria-label="タイマーの構成">

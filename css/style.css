@@ -161,7 +161,7 @@ textarea:focus-visible {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.top, .now, .controls { flex: none; }
+.top, .now, .now-divider, .controls { flex: none; }
 
 
 /* ---------- 3. 一番上 ---------- */
@@ -170,7 +170,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-block: 8px 4px;
+  padding-block: 2px;
 }
 .brand {
   font-size: 0.9375rem;
@@ -179,8 +179,8 @@ textarea:focus-visible {
   color: var(--muted);
 }
 .icon-btn {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: 12px;
   background: transparent;
@@ -197,8 +197,8 @@ textarea:focus-visible {
   position: relative;
   overflow: hidden;
   display: grid;
-  gap: 6px;
-  padding: 14px 16px 12px;
+  gap: 3px;
+  padding: 8px 14px 10px;
   /* カード全体を、今のブロックと同じ薄い色にする */
   background: var(--kind-soft);
   color: var(--fg);
@@ -207,14 +207,10 @@ textarea:focus-visible {
 }
 .now-row {
   display: flex;
+  flex-wrap: wrap;  /* 名前が長いときは、次のブロックを次の行にする */
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
-}
-.pause-label {
-  flex: none;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  gap: 2px 8px;
 }
 /* 一時停止中は、大きな数字の色を薄くする */
 @supports (color: color-mix(in srgb, red, blue)) {
@@ -240,19 +236,23 @@ textarea:focus-visible {
   letter-spacing: -0.01em;
   /* 画面の幅と高さに合わせて大きさを変える */
   font-size: min(24.5vw, 30vh, 7.25rem);
-  line-height: 1.1;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .next {
-  min-height: 1.5em;
-  text-align: center;
+  min-width: 0;
+  max-width: 100%;
+  margin-left: auto;  /* カードの右上に置く */
+  text-align: right;
+  overflow-wrap: anywhere;
   font-family: var(--font-num);
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
 }
 .bar {
   height: 8px;
+  margin-top: 2px;
   border-radius: 999px;
   background: transparent;
   box-shadow: inset 0 0 0 1px var(--kind-line);
@@ -281,6 +281,14 @@ textarea:focus-visible {
 
 /* ---------- 5. ブロックの図 ---------- */
 
+/* 上のカードとブロックの一覧を分ける線 */
+.now-divider {
+  height: 2px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
 .plan {
   flex: 1 0 auto;    /* 残りの高さを全部使う */
   height: 0;
@@ -292,7 +300,7 @@ textarea:focus-visible {
   gap: 8px;
   /* 進行中のブロックの外枠が左右で切れないように、見た目の幅を変えずに余白を取る */
   margin-inline: -4px;
-  padding: 12px 4px 8px;
+  padding: 10px 4px 6px;
 }
 .plan-list {
   display: flex;
@@ -611,10 +619,10 @@ body.is-dragging .plan .group { padding-block: 12px; }
   bottom: 0;
   z-index: 3;
   display: grid;
-  grid-template-columns: 44px 1fr auto 1fr 44px;
+  grid-template-columns: 48px 58px 76px 58px 48px;
+  justify-content: space-between;  /* 狭い画面でも5列が収まるように、余りを間に配る */
   align-items: center;
-  gap: 8px;
-  padding-block: 8px 12px;
+  padding-block: 5px 8px;
   border-top: 1px solid var(--divider);
   background: var(--bg);
 }
@@ -625,18 +633,18 @@ body.is-dragging .plan .group { padding-block: 12px; }
   border-radius: 50%;
   background: transparent;
 }
-.ctl svg { width: 32px; height: 32px; }
+.ctl svg { width: 36px; height: 36px; }
 .ctl:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.ctl.side { width: 60px; height: 60px; justify-self: center; }
-.ctl.small { width: 44px; height: 44px; }
-.ctl.small svg { width: 24px; height: 24px; }
+.ctl.side { width: 58px; height: 58px; justify-self: center; }
+.ctl.small { width: 48px; height: 48px; }
+.ctl.small svg { width: 28px; height: 28px; }
 .ctl.side:hover,
 .ctl.small:hover { background: var(--surface-2); }
 
 .play {
-  width: 80px;
-  height: 80px;
+  width: 76px;
+  height: 76px;
   background: var(--fg);  /* ブロックの種類に関係なく同じ色 */
   color: var(--bg);
 }
@@ -649,7 +657,7 @@ body.is-dragging .plan .group { padding-block: 12px; }
   position: fixed;
   z-index: 40;
   left: 50%;
-  bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   width: max-content;
   max-width: calc(100% - 32px);
   padding: 10px 16px;

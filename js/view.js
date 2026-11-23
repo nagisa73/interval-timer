@@ -125,7 +125,6 @@ function updateNowPanel() {
   // 色（今のブロックの種類に合わせる）
   const isPaused = isInProgress() && !state.running;
   $("now").className = "now k-" + (item ? kindColor(item.node.kind) : "none") + (isPaused ? " is-paused" : "");
-  $("pauseLabel").hidden = !isPaused;
 
   // 名前
   if (state.finished) {
