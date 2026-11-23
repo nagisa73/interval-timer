@@ -45,9 +45,6 @@ const CONFIG = {
   // マイセットの説明の最大文字数
   maxPresetDescLength: 60,
 
-  // 画面の短い辺がこの幅（px）未満のタッチ端末をスマホとして扱う
-  phoneMaxShortSide: 600,
-
   // スマホで長押しと判定するまでの時間（ミリ秒）
   dragPressMs: 280,
 

@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>インターバルタイマー</title>
   <meta name="theme-color" id="themeColor" content="#f1f3f6">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <!-- 開いた瞬間に色がちらつかないよう、見た目を読み込む前にライト・ダークを決める
        （"interval-timer-v1" は config.js の storageKey と同じ名前） -->
@@ -53,7 +52,7 @@
     </section>
 
     <!-- ===== ブロックの図（JavaScriptで中身を作る） ===== -->
-    <section class="plan" id="plan" aria-label="メニューの構成">
+    <section class="plan" id="plan" aria-label="タイマーの構成">
       <!-- マイセットの中身を編集している間だけ出る帯 -->
       <div class="preset-banner" id="presetBanner" hidden>
         <span id="presetBannerName"></span>
@@ -78,7 +77,7 @@
 
     <!-- ===== 一番下：操作ボタン ===== -->
     <nav class="controls" aria-label="操作">
-      <button class="ctl small" id="resetBtn" aria-label="最初に戻す">
+      <button class="ctl small" id="resetBtn" aria-label="リセット">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>
       </button>
       <button class="ctl side" id="prevBtn" aria-label="前へ">
@@ -98,16 +97,17 @@
   <!-- ===== 下から出てくるパネル（編集・メニュー用） ===== -->
   <div class="sheet-wrap" id="sheetWrap" hidden>
     <div class="scrim" id="scrim"></div>
-    <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet" id="sheetPanel" role="dialog" aria-modal="true">
       <div class="grabber"></div>
+      <!-- 全画面のとき（メニューなど）だけ出る、見出しと閉じるボタン -->
+      <div class="sheet-bar" id="sheetBar" hidden>
+        <div class="sheet-title" id="sheetTitle"></div>
+        <button type="button" class="icon-btn" id="sheetCloseBtn" aria-label="閉じる">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
       <div class="sheet-body" id="sheetBody"></div>
     </div>
-  </div>
-
-  <!-- ===== スマホを横向きにしたときの案内 ===== -->
-  <div class="rotate-notice" id="rotateNotice" role="alert" hidden>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/></svg>
-    <p>スマホを縦向きにしてください</p>
   </div>
 
   <!--

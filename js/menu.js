@@ -3,15 +3,11 @@
    ============================================================ */
 
 function openMenu() {
-  openSheet(function (body) {
+  openFullSheet(function (body) {
     body.append(createEl("h2", null, "メニュー"));
-    body.append(makeMenuSection("マイセット", "タップで読み込み（今の内容は置き換わります）", createPresetManager()));
+    body.append(makeMenuSection("マイセット", "タップで読み込み（今のタイマーは置き換わります）", createPresetManager()));
     body.append(makeMenuSection("種類", "タップで編集", createKindManager()));
-    body.append(makeMenuSection("設定", null, createThemeSwitch(), createSettingToggles(), createEl("p", "note",
-      "設定はこの端末のブラウザに自動で保存されます。" +
-      "タイマー中は画面が消えないようにしています。" +
-      "iPhoneはマナーモードだと音が鳴らないことがあります。")));
-    body.append(makeButton("閉じる", "btn primary", closeSheet));
+    body.append(makeMenuSection("設定", null, createThemeSwitch(), createSettingToggles()));
   });
 }
 

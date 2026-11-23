@@ -18,7 +18,7 @@ function makeLibraryInput(value, maxLength) {
 
 // 確認のパネル
 function openConfirm(title, message, confirmLabel, onConfirm, onCancel) {
-  openSheet(function (body) {
+  openFullSheet(function (body) {
     body.append(createEl("h2", null, title));
     body.append(createEl("p", "note", message));
     const actions = createEl("div", "actions");
@@ -59,7 +59,7 @@ function openKindEditor(id) {
   const unused = CONFIG.kindColors.find(function (c) { return !usedColors.includes(c.id); });
   let color = kind ? kind.color : (unused || CONFIG.kindColors[0]).id;
 
-  openSheet(function (body) {
+  openFullSheet(function (body) {
     body.append(createEl("h2", null, kind ? "種類を編集" : "種類を追加"));
 
     const input = makeLibraryInput(kind ? kind.name : "", CONFIG.maxKindNameLength);
@@ -146,10 +146,10 @@ function openKindDelete(kind) {
     return;
   }
 
-  openSheet(function (body) {
+  openFullSheet(function (body) {
     body.append(createEl("h2", null, "「" + kind.name + "」を削除"));
     body.append(createEl("p", "note",
-      "メニューとマイセットの " + useCount + " 個のブロックで使われています。変更先の種類を選ぶと削除します。"));
+      "今のタイマーとマイセットの " + useCount + " 個のブロックで使われています。変更先の種類を選ぶと削除します。"));
 
     const options = createEl("div", "seg");
     for (const other of state.kinds) {
@@ -193,7 +193,7 @@ function createPresetManager() {
     wrapper.append(row);
   }
 
-  wrapper.append(makeButton("＋ 今のメニューを保存", "btn", openPresetCreator));
+  wrapper.append(makeButton("＋ 今のタイマーを保存", "btn", openPresetCreator));
   return wrapper;
 }
 
@@ -213,7 +213,7 @@ function makePresetDescInput(value) {
   const textarea = createEl("textarea");
   textarea.rows = 2;
   textarea.maxLength = CONFIG.maxPresetDescLength;
-  textarea.placeholder = "例：週3回、朝にやるメニュー";
+  textarea.placeholder = "例：週3回、朝にやる運動";
   textarea.value = value;
   return textarea;
 }
@@ -225,7 +225,7 @@ function openPresetCreator() {
     return;
   }
 
-  openSheet(function (body) {
+  openFullSheet(function (body) {
     body.append(createEl("h2", null, "マイセットを追加"));
 
     const input = makeLibraryInput("", CONFIG.maxPresetNameLength);
@@ -261,7 +261,7 @@ function openPresetEditor(id) {
   const preset = findPreset(id);
   if (!preset) return;
 
-  openSheet(function (body) {
+  openFullSheet(function (body) {
     body.append(createEl("h2", null, "マイセットを編集"));
 
     const input = makeLibraryInput(preset.name, CONFIG.maxPresetNameLength);
@@ -308,7 +308,7 @@ function openPresetEditor(id) {
 // マイセットの中身を、メインの図で編集する
 function startPresetEdit(preset) {
   if (isInProgress()) {
-    showToast("編集するには、左下のボタンで最初に戻してください");
+    showToast("編集するには、左下のボタンでリセットしてください");
     return;
   }
   state.selecting = false;

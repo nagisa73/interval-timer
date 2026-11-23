@@ -26,17 +26,54 @@ function showToast(message) {
 
 // パネルを開く。buildContent は、パネルの中身を作る関数
 //   例：openSheet(function (body) { body.append(…); });
-function openSheet(buildContent) {
+//   isFull を true にすると、画面全体をおおい、右上に閉じるボタンが出る
+function openSheet(buildContent, isFull) {
   flushWheels();
   sheetWheels = [];
 
   const body = $("sheetBody");
+  const title = $("sheetTitle");
   body.replaceChildren();
+  title.replaceChildren();
   buildContent(body);
+
+  // 全画面のときは、見出しを閉じるボタンの横に移す
+  $("sheetWrap").classList.toggle("full", Boolean(isFull));
+  $("sheetBar").hidden = !isFull;
+  if (isFull) {
+    const heading = body.querySelector("h2");
+    if (heading) title.append(heading);
+  }
+
   $("sheetWrap").hidden = false;
+  $("sheetPanel").scrollTop = 0;
 
   // ホイールは、画面に出てからでないと位置を合わせられない
   for (const wheel of sheetWheels) wheel.sync();
+}
+
+// 画面全体をおおうパネルを開く（メニューと、メニューから開く画面）
+function openFullSheet(buildContent) {
+  openSheet(buildContent, true);
+}
+
+// リセットの確認
+function openResetConfirm() {
+  openSheet(function (body) {
+    body.append(createEl("h2", null, "リセットしますか？"));
+    body.append(createEl("p", "note", "タイマーを最初のブロックに戻します。"));
+
+    const actions = createEl("div", "actions");
+    actions.append(
+      makeButton("やめる", "btn", closeSheet),
+      makeButton("リセット", "btn danger", function () {
+        closeSheet();
+        resetTimer();
+        showToast("リセットしました");
+      })
+    );
+    body.append(actions);
+  });
 }
 
 function closeSheet() {

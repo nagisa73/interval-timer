@@ -25,7 +25,7 @@ function handlePlanClick(event) {
 
   // タイマーの途中で編集すると、どこまで進んだかわからなくなるので止める
   if (isInProgress()) {
-    showToast("編集するには、左下のボタンで最初に戻してください");
+    showToast("編集するには、左下のボタンでリセットしてください");
     return;
   }
   if (state.finished) resetTimer();

@@ -21,10 +21,7 @@ $("playBtn").addEventListener("click", function () {
 });
 $("nextBtn").addEventListener("click", nextStep);
 $("prevBtn").addEventListener("click", prevStep);
-$("resetBtn").addEventListener("click", function () {
-  resetTimer();
-  showToast("最初に戻しました");
-});
+$("resetBtn").addEventListener("click", openResetConfirm);
 
 // メニューボタン
 $("menuBtn").addEventListener("click", openMenu);
@@ -45,6 +42,7 @@ $("presetCancelBtn").addEventListener("click", function () { finishPresetEdit(fa
 
 // パネルの外側をタップ、または Esc キーでパネルを閉じる
 $("scrim").addEventListener("click", closeSheet);
+$("sheetCloseBtn").addEventListener("click", closeSheet);
 document.addEventListener("keydown", function (event) {
   if (event.key !== "Escape") return;
   if (drag.pointerId !== null) cancelDrag();
@@ -58,19 +56,6 @@ document.addEventListener("visibilitychange", function () {
     keepScreenOn();  // 画面を消さない設定は、切り替えると外れるのでかけ直す
     tick();          // 止まっていた間の時間を、すぐに反映する
   }
-});
-
-
-// スマホを横向きにしたとき
-window.addEventListener("resize", updateRotateNotice);
-window.addEventListener("orientationchange", updateRotateNotice);
-if (window.screen.orientation) {
-  window.screen.orientation.addEventListener("change", updateRotateNotice);
-}
-updateRotateNotice();
-tryLockPortrait();
-document.addEventListener("visibilitychange", function () {
-  if (document.visibilityState === "visible") tryLockPortrait();
 });
 
 // ホーム画面に追加できるようにする（ファイルを直接開いたときは使えないので読み込まない）
