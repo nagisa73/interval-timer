@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>インターバルタイマー</title>
+
+  <!-- 文字の形（フォント） -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=BIZ+UDPGothic:wght@400;700&display=swap">
+  <!-- 見た目 -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app" id="app">
+
+    <!-- ===== 一番上：タイトルとメニューボタン ===== -->
+    <header class="top">
+      <div class="brand">インターバルタイマー</div>
+      <button class="icon-btn" id="menuBtn" aria-label="メニューを開く">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </header>
+
+    <!-- ===== 今のブロックの表示 ===== -->
+    <section class="now" id="now" aria-live="polite">
+      <div class="now-row">
+        <span class="chip" id="chip"></span>   <!-- 今のブロックの名前 -->
+      </div>
+      <div class="clock" id="clock" role="timer">00:00</div>  <!-- 大きな残り時間 -->
+      <div class="next" id="next"></div>                       <!-- 次のブロック -->
+      <div class="bar"><span id="bar"></span></div>            <!-- 全体の進み具合 -->
+      <div class="total"><span>全体の残り</span><b id="total">0:00</b></div>
+    </section>
+
+    <!-- ===== ブロックの図（JavaScriptで中身を作る） ===== -->
+    <section class="plan" id="plan" aria-label="メニューの構成">
+      <!-- マイセットの中身を編集している間だけ出る帯 -->
+      <div class="preset-banner" id="presetBanner" hidden>
+        <span id="presetBannerName"></span>
+        <button type="button" id="presetCancelBtn">やめる</button>
+        <button type="button" id="presetSaveBtn" class="strong">保存</button>
+      </div>
+      <div class="plan-list" id="planList"></div>
+      <div class="add-row">
+        <button data-add="step">＋ ブロック</button>
+        <button data-select-start>選択して囲む</button>
+      </div>
+      <!-- 複数選択の間だけ出る帯 -->
+      <div class="select-bar" id="selectBar" hidden>
+        <p id="selectInfo"></p>
+        <div class="select-actions">
+          <button type="button" id="selectCancelBtn">やめる</button>
+          <button type="button" id="wrapBtn" class="strong">くり返しで囲む</button>
+        </div>
+      </div>
+      <p class="plan-hint">タップで変更・長押し（PCはドラッグ）で移動</p>
+    </section>
+
+    <!-- ===== 一番下：操作ボタン ===== -->
+    <nav class="controls" aria-label="操作">
+      <button class="ctl small" id="resetBtn" aria-label="最初に戻す">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>
+      </button>
+      <button class="ctl side" id="prevBtn" aria-label="前へ">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="2.4" height="14" rx="1"/><path d="M19 5.8v12.4a1 1 0 0 1-1.55.83L8.6 13.2a1.4 1.4 0 0 1 0-2.4l8.85-5.83A1 1 0 0 1 19 5.8z"/></svg>
+      </button>
+      <button class="ctl play" id="playBtn" aria-label="スタート"></button>
+      <button class="ctl side" id="nextBtn" aria-label="次へ">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="16.6" y="5" width="2.4" height="14" rx="1"/><path d="M5 5.8v12.4a1 1 0 0 0 1.55.83l8.85-5.83a1.4 1.4 0 0 0 0-2.4L6.55 4.97A1 1 0 0 0 5 5.8z"/></svg>
+      </button>
+      <span></span> <!-- 左右のバランスをとるための空き -->
+    </nav>
+  </div>
+
+  <!-- ===== 画面下に一瞬出るお知らせ ===== -->
+  <div class="toast" id="toast" role="status"></div>
+
+  <!-- ===== 下から出てくるパネル（編集・メニュー用） ===== -->
+  <div class="sheet-wrap" id="sheetWrap" hidden>
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="grabber"></div>
+      <div class="sheet-body" id="sheetBody"></div>
+    </div>
+  </div>
+
+  <!--
+    JavaScript の読み込み。
+    上から順番に読み込まれるので、「使われる側」を先に書いておく。
+    （例：plan.js の makeStep を presets.js で使うので、plan.js が先）
+  -->
+  <script src="js/config.js"></script>   <!-- 変更しやすい設定値 -->
+  <script src="js/utils.js"></script>    <!-- 小さな便利関数 -->
+  <script src="js/plan.js"></script>     <!-- ブロックとくり返しのデータ -->
+  <script src="js/presets.js"></script>  <!-- マイセット -->
+  <script src="js/state.js"></script>    <!-- アプリ全体の状態 -->
+  <script src="js/storage.js"></script>  <!-- 保存と読み込み -->
+  <script src="js/device.js"></script>   <!-- 音・画面の点灯 -->
+  <script src="js/timer.js"></script>    <!-- タイマーの動き -->
+  <script src="js/view.js"></script>     <!-- 画面の表示 -->
+  <script src="js/ui.js"></script>       <!-- パネルやお知らせの部品 -->
+  <script src="js/editor.js"></script>   <!-- ブロックの編集 -->
+  <script src="js/arrange.js"></script>  <!-- ドラッグ＆ドロップと複数選択 -->
+  <script src="js/library.js"></script>  <!-- 種類とマイセットの管理 -->
+  <script src="js/menu.js"></script>     <!-- メニュー -->
+  <script src="js/main.js"></script>     <!-- はじめに動く処理 -->
+</body>
+</html>
