@@ -39,14 +39,14 @@
        --c-名前-line  : 枠とゲージの色（明るい色は、背景に埋もれないよう濃くする）
        --c-名前-on    : 塗りの上に乗る文字の色
      名前は保存データとの互換のためのもので、実際の色味とは少し違うものもある */
-  --c-orange: #f54600; --c-orange-soft: #ffedda; --c-orange-line: #f54600; --c-orange-on: #0f1720;
+  --c-orange: #f54600; --c-orange-soft: #ffedda; --c-orange-line: #f54600; --c-orange-on: #ffffff;
   --c-teal:   #0b7a3e; --c-teal-soft:   #d8eae0; --c-teal-line:   #0b7a3e; --c-teal-on:   #ffffff;
   --c-indigo: #0011ee; --c-indigo-soft: #d6d9fc; --c-indigo-line: #0011ee; --c-indigo-on: #ffffff;
   --c-red:    #c0182f; --c-red-soft:    #f5dade; --c-red-line:    #c0182f; --c-red-on:    #ffffff;
-  --c-pink:   #e0409f; --c-pink-soft:   #feeff8; --c-pink-line:   #e0409f; --c-pink-on:   #0f1720;
+  --c-pink:   #e0409f; --c-pink-soft:   #feeff8; --c-pink-line:   #e0409f; --c-pink-on:   #ffffff;
   --c-purple: #44226e; --c-purple-soft: #e1dce8; --c-purple-line: #44226e; --c-purple-on: #ffffff;
-  --c-blue:   #0a8fd0; --c-blue-soft:   #e5f9ff; --c-blue-line:   #0a8fd0; --c-blue-on:   #0f1720;
-  --c-green:  #888a00; --c-green-soft:  #fffbde; --c-green-line:  #888a00; --c-green-on:  #0f1720;
+  --c-blue:   #0a8fd0; --c-blue-soft:   #e5f9ff; --c-blue-line:   #0a8fd0; --c-blue-on:   #ffffff;
+  --c-green:  #888a00; --c-green-soft:  #fffbde; --c-green-line:  #888a00; --c-green-on:  #ffffff;
 
   --on-kind:   #ffffff;  /* 色付きの背景の上に乗る文字 */
   --danger:    #b91c1c;  /* 削除ボタンなど */
@@ -74,8 +74,8 @@
 
   --c-orange: #ee8800; --c-orange-soft: #3a2e1d; --c-orange-line: #ee8800; --c-orange-on: #0b0f14;
   --c-teal:   #55bb88; --c-teal-soft:   #203634; --c-teal-line:   #55bb88; --c-teal-on:   #0b0f14;
-  --c-indigo: #2b78ff; --c-indigo-soft: #192b48; --c-indigo-line: #2b78ff; --c-indigo-on: #0b0f14;
-  --c-red:    #ff0055; --c-red-soft:    #3d162c; --c-red-line:    #ff0055; --c-red-on:    #0b0f14;
+  --c-indigo: #2b78ff; --c-indigo-soft: #192b48; --c-indigo-line: #2b78ff; --c-indigo-on: #ffffff;
+  --c-red:    #ff0055; --c-red-soft:    #3d162c; --c-red-line:    #ff0055; --c-red-on:    #ffffff;
   --c-pink:   #ffb5bd; --c-pink-soft:   #3d353d; --c-pink-line:   #ffb5bd; --c-pink-on:   #0b0f14;
   --c-purple: #c990ff; --c-purple-soft: #342f48; --c-purple-line: #c990ff; --c-purple-on: #0b0f14;
   --c-blue:   #77ddff; --c-blue-soft:   #263c48; --c-blue-line:   #77ddff; --c-blue-on:   #0b0f14;
@@ -172,6 +172,10 @@ textarea:focus-visible {
   justify-content: space-between;
   padding-block: 2px;
 }
+/* ホーム画面から開いたときは、画面上部のぼやける部分をよけるため少し下げる */
+@media (display-mode: standalone) {
+  .top { padding-top: 8px; }
+}
 .brand {
   font-size: 0.9375rem;
   font-weight: 700;
@@ -212,12 +216,12 @@ textarea:focus-visible {
 .chip {
   min-width: 0;
   max-width: 100%;
-  padding: 4px 14px;
+  padding: 3px 14px;
   border-radius: 999px;
   background: var(--kind);
   color: var(--on-kind);
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 1.1875rem;  /* 白文字でも読みやすい大きさ */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
