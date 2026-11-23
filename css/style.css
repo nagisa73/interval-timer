@@ -198,18 +198,12 @@ textarea:focus-visible {
   overflow: hidden;
   display: grid;
   gap: 6px;
-  padding: 16px 16px 12px;
-  background: var(--surface);
-  border: 1px solid var(--divider);
+  padding: 14px 16px 12px;
+  /* カード全体を、今のブロックと同じ薄い色にする */
+  background: var(--kind-soft);
+  color: var(--fg);
+  border: 2px solid var(--kind-line);
   border-radius: 18px;
-}
-/* カードの上の色付きの線 */
-.now::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 6px;
-  background: var(--kind-line);
 }
 .now-row {
   display: flex;
@@ -221,10 +215,11 @@ textarea:focus-visible {
   flex: none;
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--fg);
 }
 /* 一時停止中は、大きな数字の色を薄くする */
-.now.is-paused .clock { color: var(--muted); }
+@supports (color: color-mix(in srgb, red, blue)) {
+  .now.is-paused .clock { color: color-mix(in srgb, var(--fg) 70%, var(--kind-soft)); }
+}
 .chip {
   min-width: 0;
   max-width: 100%;
@@ -252,7 +247,6 @@ textarea:focus-visible {
 .next {
   min-height: 1.5em;
   text-align: center;
-  color: var(--muted);
   font-family: var(--font-num);
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
@@ -260,8 +254,8 @@ textarea:focus-visible {
 .bar {
   height: 8px;
   border-radius: 999px;
-  background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--line);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--kind-line);
   overflow: hidden;
 }
 .bar span {
@@ -269,20 +263,18 @@ textarea:focus-visible {
   height: 100%;
   width: 0;
   border-radius: 999px;
-  background: var(--fg);
+  background: var(--kind-line);
 }
 .total {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   font-size: 0.9375rem;
-  color: var(--muted);
 }
 .total b {
   font-family: var(--font-num);
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--fg);
   font-variant-numeric: tabular-nums;
 }
 

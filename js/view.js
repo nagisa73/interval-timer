@@ -187,9 +187,8 @@ function updateBlocks() {
   }
 
   for (const [id, block] of blockElements) {
-    // スタート前の最初のブロックは強調しない（「次へ」で進めたときは、どこにいるか示す）
-    const showCurrent = state.started || state.index > 0;
-    const isCurrent = showCurrent && item !== null && item.node.id === id;
+    // スタート前は強調しない
+    const isCurrent = state.started && item !== null && item.node.id === id;
     block.classList.toggle("current", isCurrent);
 
     // --p は CSS に渡す値（0 = 空、1 = 満タン）
@@ -238,8 +237,10 @@ function updateControls() {
 
   const isEmpty = state.runList.length === 0;
   $("playBtn").disabled = isEmpty || state.presetEdit !== null;  // マイセットの編集中は動かさない
-  $("prevBtn").disabled = isEmpty;
-  $("nextBtn").disabled = isEmpty || state.finished;
+  // リセット・前へ・次へは、スタートするまで押せない
+  $("resetBtn").disabled = !state.started;
+  $("prevBtn").disabled = isEmpty || !state.started;
+  $("nextBtn").disabled = isEmpty || !state.started || state.finished;
 
   // タイマー中は「＋ ブロック」などを隠す（style.css の .is-started を参照）
   $("app").classList.toggle("is-started", isInProgress());
