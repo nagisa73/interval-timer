@@ -273,7 +273,7 @@ function createGroupActions(found, repeatWheel) {
     found.parentList.splice(found.index, 1, ...group.items);
     commitPlanChange();
     closeSheet();
-    showToast("中身だけ残しました");
+    showToast("くり返しを解除しました");
   });
 
   const deleteButton = makeButton("まとめて削除", "btn danger", function () {
