@@ -93,20 +93,20 @@ function openFullSheet(buildContent) {
   openSheet(buildContent, true);
 }
 
-// リセットの確認
+// 「最初に戻す」の確認
 function openResetConfirm() {
   openSheet(function (body) {
-    body.append(createEl("h2", null, "リセットしますか？"));
+    body.append(createEl("h2", null, "最初に戻しますか？"));
     body.append(createEl("p", "note", "タイマーを最初のブロックに戻します。"));
 
     const actions = createEl("div", "actions");
     actions.append(
       makeButton("やめる", "btn", closeSheet),
-      makeButton("リセット", "btn danger", function () {
+      makeButton("最初に戻す", "btn danger", function () {
         closeSheet();
         resetTimer();
         $("plan").scrollTo({ top: 0, behavior: scrollMotion() });
-        showToast("リセットしました");
+        showToast("最初に戻しました");
       })
     );
     body.append(actions);

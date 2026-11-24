@@ -309,7 +309,7 @@ function openPresetEditor(id) {
 // マイセットの中身を、メインの図で編集する
 function startPresetEdit(preset) {
   if (isInProgress()) {
-    showToast("編集するには、左下のボタンでリセットしてください");
+    showToast("編集するには、左下のボタンで最初に戻してください");
     return;
   }
   state.selecting = false;
