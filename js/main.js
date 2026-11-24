@@ -75,6 +75,28 @@ window.addEventListener("focus", recoverAudio);
 // 音が止まっていたら、次に画面を触ったときに再開する
 setupAudioRecovery();
 
+// 画面を回転したあと、表示やタップの位置がずれないように整える。
+// iPhone は回転後にページが少しスクロールしたまま残ったり、高さが遅れて変わったりするので、
+// 何回か時間をおいて直す
+function fixLayoutAfterResize() {
+  document.documentElement.style.setProperty("--screen-height", window.innerHeight + "px");
+  if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);  // ページ自体は動かさない
+  const app = $("app");
+  const maxScroll = Math.max(0, app.scrollHeight - app.clientHeight);
+  if (app.scrollTop > maxScroll) app.scrollTop = maxScroll;
+}
+
+let layoutFixTimers = [];
+function scheduleLayoutFix() {
+  if (drag.pointerId !== null) cancelDrag();  // 回転するとドラッグ中の位置が合わなくなる
+  layoutFixTimers.forEach(clearTimeout);
+  layoutFixTimers = [0, 150, 400, 800].map(function (ms) { return setTimeout(fixLayoutAfterResize, ms); });
+}
+
+fixLayoutAfterResize();
+window.addEventListener("resize", scheduleLayoutFix);
+window.addEventListener("orientationchange", scheduleLayoutFix);
+
 // ホーム画面に追加できるようにする（ファイルを直接開いたときは使えないので読み込まない）
 if (location.protocol === "http:" || location.protocol === "https:") {
   const manifestLink = document.createElement("link");
