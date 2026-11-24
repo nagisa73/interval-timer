@@ -70,15 +70,15 @@ function openStepCreator() {
 
     const nameInput = createNameInput(step);
     body.append(makeField("名前", nameInput));
-    body.append(makeField("種類", createKindSwitch(step, function (previousKindId) {
+    body.append(spaced(makeField("種類", createKindSwitch(step, function (previousKindId) {
       // 名前を自分で変えていないときは、種類の名前に合わせる
       const previousKind = findKind(previousKindId);
       const current = nameInput.value.trim();
       if (current === "" || (previousKind && current === previousKind.name)) {
         nameInput.value = findKind(step.kind).name;
       }
-    })));
-    body.append(makeField("時間", createTimeControls(step)));
+    }))));
+    body.append(spaced(makeField("時間", createTimeControls(step))));
 
     const actions = createEl("div", "actions");
     const cancelButton = makeButton("やめる", "btn wide", closeSheet);
@@ -112,10 +112,16 @@ function openStepEditor(id) {
     const draft = { kind: found.node.kind, seconds: found.node.seconds, name: found.node.name };
     const nameInput = createNameInput(draft);
     body.append(makeField("名前", nameInput));
-    body.append(makeField("種類", createKindSwitch(draft)));
-    body.append(makeField("時間", createTimeControls(draft)));
+    body.append(spaced(makeField("種類", createKindSwitch(draft))));
+    body.append(spaced(makeField("時間", createTimeControls(draft))));
     body.append(createStepActions(found, draft, nameInput));
   });
+}
+
+// ブロックの追加・編集パネルで、前の項目との間を少し空ける（style.css の .field.spaced）
+function spaced(field) {
+  field.classList.add("spaced");
+  return field;
 }
 
 // 名前の入力欄
