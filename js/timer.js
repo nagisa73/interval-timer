@@ -103,6 +103,13 @@ function loop() {
 function tick() {
   if (!state.running) return;
 
+  // ゲージを指で動かしている間は、時計を止めておく（音も鳴らさない。scrub.js）
+  if (state.scrubbing) {
+    state.endAt = Date.now() + state.remainingMs;
+    updateView();
+    return;
+  }
+
   const now = Date.now();
   let changed = false;
 

@@ -347,6 +347,10 @@ textarea:focus-visible {
   inset: 1px;  /* ゲージの角が枠の外にはみ出さないようにする */
   opacity: 0.32;
 }
+/* 長押ししてゲージを動かせる状態（scrub.js）。少し浮かせてゲージを濃くする */
+.block.current { transition: transform 0.12s; }
+.block.current.scrubbing { transform: scale(1.03); }
+.block.current.scrubbing .fill { opacity: 0.5; }
 /* タイマー中は今のブロック以外の枠と背景を少し薄くして、今のブロックを目立たせる */
 #app:not(.is-selecting) .block.is-other {
   border-color: color-mix(in srgb, var(--kind-line) 50%, transparent);

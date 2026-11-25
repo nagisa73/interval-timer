@@ -47,6 +47,11 @@ const CONFIG = {
   // スマホで長押しと判定するまでの時間（ミリ秒）
   dragPressMs: 280,
 
+  // スタート後に今のブロックのゲージを動かすとき（scrub.js）
+  scrubPressMs: 500,         // 長押しと判定するまでの時間（ミリ秒）。うっかり防止で長め
+  scrubMoveTolerancePx: 8,   // 長押しの前にこれ以上動いたら、スクロールとみなす
+  scrubDeadZonePx: 12,       // 横にこれだけ動かすまでは時間を変えない
+
   // 種類に選べる色（実際の色は style.css の --c-〇〇）
   kindColors: [
     { id: "orange", label: "色1" },

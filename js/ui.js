@@ -30,16 +30,21 @@ function copyPlan() {
 // 「元に戻す」ボタン付きのお知らせを出す。
 // previousPlan は、変更する前に copyPlan() で写し取っておいた中身
 function showUndoToast(message, previousPlan) {
-  const toast = $("toast");
-  const undoButton = createEl("button", "toast-action", "元に戻す");
-  undoButton.type = "button";
-  undoButton.addEventListener("click", function () {
+  showUndoAction(message, function () {
     state.selecting = false;
     state.selectedIds = new Set();
     state.plan = normalizePlan(previousPlan);
     commitPlanChange();
     showToast("元に戻しました");
   });
+}
+
+// 「元に戻す」ボタン付きのお知らせを出す。押したら onUndo を呼ぶ
+function showUndoAction(message, onUndo) {
+  const toast = $("toast");
+  const undoButton = createEl("button", "toast-action", "元に戻す");
+  undoButton.type = "button";
+  undoButton.addEventListener("click", onUndo);
 
   toast.replaceChildren(createEl("span", null, message), undoButton);
   toast.classList.add("has-action", "show");

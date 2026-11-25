@@ -57,4 +57,7 @@ const state = {
 
   // 最後に「ピッ」を鳴らした秒数（同じ秒に何度も鳴らさないため）
   lastBeepSecond: null,
+
+  // 今のブロックのゲージを指で動かしているか（scrub.js）
+  scrubbing: false,
 };
