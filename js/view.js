@@ -226,8 +226,8 @@ function updateControls() {
 
   const isEmpty = state.runList.length === 0;
   $("playBtn").disabled = isEmpty || state.presetEdit !== null;  // マイセットの編集中は動かさない
-  // 最初に戻す・前へ・次へは、スタートするまで押せない
-  $("resetBtn").disabled = !state.started;
+  // 前へ・次へは、スタートするまで押せない。最初に戻すは、一時停止中と終了後だけ押せる
+  $("resetBtn").disabled = !state.started || state.running;
   $("prevBtn").disabled = isEmpty || !state.started;
   $("nextBtn").disabled = isEmpty || !state.started || state.finished;
 

@@ -24,11 +24,8 @@ function handlePlanClick(event) {
   const editTarget = event.target.closest("[data-edit]");
   if (!addButton && !selectButton && !editTarget) return;
 
-  // タイマーの途中で編集すると、どこまで進んだかわからなくなるので止める
-  if (isInProgress()) {
-    showToast("編集するには、左下のボタンで最初に戻してください");
-    return;
-  }
+  // タイマーの途中で編集すると、どこまで進んだかわからなくなるので、何もしない
+  if (isInProgress()) return;
   if (state.finished) resetTimer();
 
   if (addButton) {
