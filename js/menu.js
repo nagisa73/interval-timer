@@ -86,7 +86,10 @@ function openSoundPicker(key, title) {
       list.append(option);
     }
     body.append(list);
-    body.append(makeButton("戻る", "btn sound-back", backToSoundSettings));
+    // 「戻る」は下に固定し、音の一覧と見分けやすいよう塗りつぶしのボタンにする
+    const actions = createEl("div", "actions sound-actions");
+    actions.append(makeButton("戻る", "btn primary", backToSoundSettings));
+    body.append(actions);
   });
 
   // 今選んでいる音が見える位置まで動かす
