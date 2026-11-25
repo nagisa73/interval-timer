@@ -554,7 +554,7 @@ body.is-dragging { cursor: grabbing; user-select: none; -webkit-user-select: non
 /* ドラッグ中だけ間隔を広げて、枠の外や間に入れやすくする */
 body.is-dragging .plan-list { gap: 16px; padding-block: 10px; }
 body.is-dragging .plan .g-body { gap: 16px; }
-body.is-dragging .plan .group { padding-block: 12px; }
+body.is-dragging .plan .group { padding-block: 16px; }  /* この上下の余白に指があると、枠の外へ入れる */
 .drag-ghost {
   position: fixed;
   left: 0;

@@ -247,20 +247,30 @@ function findSlot(listEl, groupId, depth, dragged) {
     const rect = el.getBoundingClientRect();
     if (drag.y > rect.bottom) continue;
 
-    if (el.classList.contains("group") && Number(el.dataset.node) !== drag.id) {
-      const label = el.querySelector(":scope > .g-label").getBoundingClientRect();
-      const onLabel = drag.x >= label.left;
+    // くり返しの枠は、上下の位置だけで入れる場所を決める（左右の位置は使わない）
+    //   中身の高さにいるとき → 枠の中へ
+    //   枠の上の余白 → 枠の前（外）へ、枠の下の余白 → 枠の後ろ（外）へ
+    if (el.classList.contains("group") && Number(el.dataset.node) !== drag.id && drag.y >= rect.top) {
+      const body = el.querySelector(":scope > .g-body");
+      const bodyRect = body.getBoundingClientRect();
 
-      // 枠の中ならどこでも中に入れる。外に出すときは、枠の間かセット数の部分へ
-      if (!onLabel && drag.y >= rect.top) {
-        if (depth + 1 + nestHeight(dragged) <= CONFIG.maxNestDepth) {
-          const body = el.querySelector(":scope > .g-body");
-          return findSlot(body, Number(el.dataset.node), depth + 1, dragged);
-        }
-        if (!drag.warned) {
-          drag.warned = true;
-          showToast("くり返しの入れ子は" + CONFIG.maxNestDepth + "段までです");
-        }
+      if (drag.y < bodyRect.top || drag.y > bodyRect.bottom) {
+        const isBefore = drag.y < bodyRect.top;
+        return {
+          groupId: groupId,
+          index: isBefore ? i : i + 1,
+          left: rect.left,
+          width: rect.width,
+          top: isBefore ? rect.top - 8 : rect.bottom + 8,
+          listEl: listEl,
+        };
+      }
+      if (depth + 1 + nestHeight(dragged) <= CONFIG.maxNestDepth) {
+        return findSlot(body, Number(el.dataset.node), depth + 1, dragged);
+      }
+      if (!drag.warned) {
+        drag.warned = true;
+        showToast("くり返しの入れ子は" + CONFIG.maxNestDepth + "段までです");
       }
     }
 
